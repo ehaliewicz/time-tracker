@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 
-from .models import Greeting
+from .models import TodoItem, TodoLog
 
 # Create your views here.
 def index(request):
@@ -9,11 +9,13 @@ def index(request):
     return render(request, "index.html")
 
 
-def db(request):
 
-    greeting = Greeting()
-    greeting.save()
 
-    greetings = Greeting.objects.all()
+def todos(request):
 
-    return render(request, "db.html", {"greetings": greetings})
+    #greeting = Greeting()
+    #greeting.save()
+
+    #greetings = Greeting.objects.all()
+
+    return render(request, "db.html", {"greetings": []}) #greetings})

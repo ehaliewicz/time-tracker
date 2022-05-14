@@ -1,5 +1,16 @@
 from django.db import models
 
-# Create your models here.
-class Greeting(models.Model):
-    when = models.DateTimeField("date created", auto_now_add=True)
+
+class TodoItem(models.Model):
+    name = models.CharField(max_length=128)
+    description = models.CharField(max_length=1024)
+    duration = models.IntegerField()
+    tag = models.CharField(max_length=128)
+
+
+class TodoLog(models.Model):
+    name = models.CharField(max_length=128)
+    description = models.CharField(max_length=1024)
+    duration = models.IntegerField()
+    tag = models.CharField(max_length=128)
+    date = models.DateField()
