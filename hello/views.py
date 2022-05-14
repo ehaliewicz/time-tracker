@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.http import HttpResponse
 
 from .models import TodoItem, TodoLog
@@ -83,3 +83,7 @@ def todo_list(request):
 
     all_todo_items = todo_list_or_defaults #TodoItem.objects.all()
     return render(request, "todo_list.html", {"todo_items": all_todo_items})
+
+
+def redirect_to_today(request):
+    return redirect("/today")

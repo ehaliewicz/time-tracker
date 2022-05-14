@@ -17,4 +17,5 @@ import hello.views
 urlpatterns = [
     path("today/", hello.views.todays_todos, name="todays todos"),
     path("todo_list/", hello.views.todo_list, name="todo list"),
+    path("", hello.views.redirect_to_today, name="")
 ]
