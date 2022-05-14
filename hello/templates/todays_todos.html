@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+  <div class="container">
+
+
+<h2>Todo List For Today</h2>
+
+
+<ul>
+  
+{% for todo in todo_logs %}
+    <li><span style="font-weight:bold;">{{ todo.description }}</span> - ({{ todo.duration }}m) %{{ todo.tag }}</li>
+{% endfor %}
+
+</ul>
+
+</div>
+
+{% endblock %}

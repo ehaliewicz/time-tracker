@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+  <div class="container">
+
+
+<h2>Todo List For Today!</h2>
+
+
+<ul>
+
+{% for todo in todos %}
+    <li>{{ greeting.when }}</li>
+{% endfor %}
+
+</ul>
+
+</div>
+
+{% endblock %}

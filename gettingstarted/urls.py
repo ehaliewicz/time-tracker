@@ -15,7 +15,6 @@ import hello.views
 # Learn more here: https://docs.djangoproject.com/en/2.1/topics/http/urls/
 
 urlpatterns = [
-    #path("", hello.views.index, name="index"),
-    path("todos/", hello.views.todos, name="todos"),
-    #path("admin/", admin.site.urls),
+    path("today/", hello.views.todays_todos, name="todays todos"),
+    path("todo_list/", hello.views.todo_list, name="todo list"),
 ]
