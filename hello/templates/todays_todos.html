@@ -9,13 +9,26 @@
 
 
 <ul>
-  
+
 {% for todo in todo_logs %}
-    <li><span style="font-weight:bold;">{{ todo.description }}</span> - ({{ todo.duration }}m) %{{ todo.tag }}</li>
+    <li>
+      <form action="/today/{{todo.instance.unique_id}}" method="post">
+        {% csrf_token %}
+        {{ todo.completion }}
+        <span style="font-weight:bold;">{{ todo.description }}</span> - ({{ todo.duration }}m) %{{ todo.tag }} 
+        <span style="display: none;">{{ todo.date }}</span>
+        
+        <input type="submit" value="Update">
+      </form>
+    </li>
 {% endfor %}
 
 </ul>
 
+<h3>
+Stats:
+</h3>
+<span style="font-weight:bold;">Todays time:</span> {{completed_time.0}}hr{{completed_time.1}}m
 </div>
 
 {% endblock %}

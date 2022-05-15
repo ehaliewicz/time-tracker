@@ -47,9 +47,26 @@
 <nav class="navbar navbar-default navbar-static-top navbar-inverse">
   <div class="container">
     <ul class="nav navbar-nav">
+      {% if request.path == "/today/" %}
       <li class="active">
-        <a href="/"><span class="glyphicon glyphicon-home"></span> Home</a>
+        <a href="/today"><span class="glyphicon glyphicon-home"></span> Today</a>
       </li>
+      {% else %}
+      <li class="">
+        <a href="/today"><span class="glyphicon glyphicon-home"></span> Today</a>
+      </li>
+      {% endif %}
+
+      
+      {% if request.path == "/todo_list/" %}
+      <li class="active">
+        <a href="/todo_list"><span class="glyphicon glyphicon-home"></span> Todo List</a>
+      </li>
+      {% else %}
+      <li>
+        <a href="/todo_list"><span class="glyphicon glyphicon-home"></span> Todo List</a>
+      </li>
+      {% endif %}
     </ul>
   </div>
 </nav>

@@ -1,14 +1,10 @@
 from django.shortcuts import redirect, render
 from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_protect
+from django.views import View
 
-from .models import TodoItem, TodoLog
+from .models import TodoItem, TodoLog, TodoItemForm, TodoLogForm
 import datetime
-
-# Create your views here.
-def index(request):
-    # return HttpResponse('Hello from Python!')
-    return render(request, "index.html")
-
 
 def todoItemToLog(item, date):
     return TodoLog(
@@ -46,35 +42,73 @@ def todo_list_or_defaults():
         return DEFAULT_TODOS
     else:
         return all_todo_items
+
+
+class UpdateLogView(View):
+    http_method_names = ['post']
+
+    def post(self, request, log_id):
+        form = TodoLogForm(request.POST)
+        if form.is_valid():
+            form.instance.unique_id = log_id
+            form.instance.save()
+        else:
+            raise Exception("Error(s) updating or creating todo log {}".format(form.errors))
     
+    
+        return redirect("/today")
 
+
+def calculate_stats():
+    
+    today = datetime.date.today()
+    todo_logs_for_today = TodoLog.objects.filter(date=today)
+    completed_time = sum([log.duration for log in todo_logs_for_today if log.completion])
+    return {
+        'completed_time': get_hr_min(completed_time)
+    }
+
+
+def get_hr_min(m):
+    return int(m//60), m%60
+
+@csrf_protect
 def todays_todos(request):
-
-    #greeting = Greeting()
-    #greeting.save()
-
-    #greetings = Greeting.objects.all()
-
     today = datetime.date.today()
 
     todo_logs_for_today = TodoLog.objects.filter(date=today)
+
+
     if len(todo_logs_for_today) == 0:
         # create a list of TodoLogs from TodoItems
         all_todo_items = todo_list_or_defaults() #TodoItem.objects.all()
 
         new_todo_logs = []
         for item in all_todo_items:
-            log = todoItemToLog(item,today)
+            log = todoItemToLog(item, today)
             log.save()
             new_todo_logs.append(log)
 
         todo_logs_for_today = new_todo_logs
 
+    calced_stats = calculate_stats()
     
-    return render(request, "todays_todos.html", {"todo_logs": todo_logs_for_today}) #greetings})
+    return render(request, "todays_todos.html", {
+        "todo_logs": [TodoLogForm(instance=todo_log) for todo_log in todo_logs_for_today],
+        "completed_time": calced_stats['completed_time']
+    })
 
 
+@csrf_protect
 def todo_list(request):
+    if request.method == 'POST':
+        form = TodoItemForm(request.POST)
+        if form.is_valid():
+            form.save()
+        else:
+            raise Exception("Error creating new todo item")
+    else:
+        form = TodoItemForm()
 
     #greeting = Greeting()
     #greeting.save()
@@ -82,8 +116,14 @@ def todo_list(request):
     #greetings = Greeting.objects.all()
 
     all_todo_items = todo_list_or_defaults #TodoItem.objects.all()
-    return render(request, "todo_list.html", {"todo_items": all_todo_items})
+    return render(request, "todo_list.html", 
+                {
+                    "todo_items": all_todo_items,
+                    "form": form
+                }
+            )
 
 
 def redirect_to_today(request):
     return redirect("/today")
+

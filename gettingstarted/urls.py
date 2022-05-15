@@ -15,6 +15,7 @@ import hello.views
 # Learn more here: https://docs.djangoproject.com/en/2.1/topics/http/urls/
 
 urlpatterns = [
+    path("today/<int:log_id>", hello.views.UpdateLogView.as_view(), name="update todo log"),
     path("today/", hello.views.todays_todos, name="todays todos"),
     path("todo_list/", hello.views.todo_list, name="todo list"),
     path("", hello.views.redirect_to_today, name="")
