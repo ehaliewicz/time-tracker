@@ -25,10 +25,24 @@
 
 </ul>
 
+{% if streak >= 2 %}
+<h4>Streak: {{streak}} days !</h4>
+{% else %}
+<h4>Streak: {{streak}} days</h4>
+{% endif %}
+
 <h3>
 Stats:
 </h3>
-<span style="font-weight:bold;">Todays time:</span> {{completed_time.0}}hr{{completed_time.1}}m
+<div>
+    <span style="font-weight:bold;">Todays time:</span> {{completed_time.0}}hr{{completed_time.1}}m
+</div>
+<div>
+    <span style="font-weight:bold;">This week's time:</span> {{completed_week_time.0}}hr{{completed_week_time.1}}m
+</div>
+<div>
+    <span style="font-weight:bold;">This week's time:</span> {{total_time.0}}hr{{total_time.1}}m
+</div>
 </div>
 
 {% endblock %}

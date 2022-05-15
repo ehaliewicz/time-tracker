@@ -62,10 +62,33 @@ class UpdateLogView(View):
 def calculate_stats():
     
     today = datetime.date.today()
-    todo_logs_for_today = TodoLog.objects.filter(date=today)
-    completed_time = sum([log.duration for log in todo_logs_for_today if log.completion])
+    start_of_week = today-datetime.timedelta(days=7)
+    todo_logs_for_today = TodoLog.objects.filter(date=today, completion=True)
+    completed_time = sum([log.duration for log in todo_logs_for_today])
+
+    todo_logs_for_week = TodoLog.objects.filter(date__gte=start_of_week, completion=True)
+    completed_week = sum([log.duration for log in todo_logs_for_week])
+
+    all_todo_logs = list(TodoLog.objects.all())
+    completed_total = sum([log.duration for log in all_todo_logs if log.completion])
+
+    completed_dates = set([log.date for log in all_todo_logs if log.completion])
+    
+
+    cur_date = datetime.date.today()
+    streak = 0
+    while True:
+        if not cur_date in completed_dates:
+            break
+        streak += 1
+        cur_date = cur_date - datetime.timedelta(days=1)
+
+
     return {
-        'completed_time': get_hr_min(completed_time)
+        'completed_time': get_hr_min(completed_time),
+        'completed_week_time': get_hr_min(completed_week),
+        'total_time': get_hr_min(completed_total),
+        'streak': streak
     }
 
 
@@ -95,7 +118,7 @@ def todays_todos(request):
     
     return render(request, "todays_todos.html", {
         "todo_logs": [TodoLogForm(instance=todo_log) for todo_log in todo_logs_for_today],
-        "completed_time": calced_stats['completed_time']
+        **calced_stats
     })
 
 
