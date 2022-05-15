@@ -76,7 +76,7 @@ def get_hr_min(m):
 def todays_todos(request):
     today = datetime.date.today()
 
-    todo_logs_for_today = TodoLog.objects.filter(date=today)
+    todo_logs_for_today = TodoLog.objects.filter(date=today).order_by('unique_id')
 
 
     if len(todo_logs_for_today) == 0:
