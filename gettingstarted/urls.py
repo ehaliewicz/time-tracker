@@ -4,7 +4,7 @@ from django.contrib import admin
 
 admin.autodiscover()
 
-import hello.views
+import todo.views
 
 # To add a new path, first import the app:
 # import blog
@@ -15,8 +15,17 @@ import hello.views
 # Learn more here: https://docs.djangoproject.com/en/2.1/topics/http/urls/
 
 urlpatterns = [
-    path("today/<int:log_id>", hello.views.UpdateLogView.as_view(), name="update todo log"),
-    path("today/", hello.views.todays_todos, name="todays todos"),
-    path("todo_list/", hello.views.todo_list, name="todo list"),
-    path("", hello.views.redirect_to_today, name="")
+    path("update_todo_log/<int:log_id>", todo.views.update_todo_log, name="update todo log"),
+    path("new_todo_log/", todo.views.new_todo_log, name="new todo log"),
+    path("delete_todo_log/<int:log_id>", todo.views.delete_todo_log, name="delete todo log"),
+
+    path("update_todo_item/<int:item_id>", todo.views.update_todo_item, name="update todo item"),
+    path("new_todo_item/", todo.views.new_todo_item, name="new todo item"),
+    path("delete_todo_item/<int:item_id>", todo.views.delete_todo_item, name="delete todo item"),
+
+    path("day/<str:date>", todo.views.date_todos, name="date todos"),
+    path("today/", todo.views.todays_todos, name="todays todos"),
+
+    path("todo_list/", todo.views.todo_list, name="todo list"),
+    path("", todo.views.redirect_to_today, name=""),
 ]

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+  <div class="container">
+
+
+<h2>Current Todo List</h2>
+
+
+<ul>
+  
+{% for todo in todo_items %}
+  <li>
+
+    <form action="/update_todo_item/{{todo.instance.unique_id}}" method="post" style="display: inline;">
+      {% csrf_token %}
+      <span style="font-weight:bold;">{{ todo.description }}</span> - ({{ todo.duration }}m) %{{ todo.tag }} 
+      <span style="display: none;">{{ todo.date }}</span>
+      
+      <input type="submit" value="Update">
+    </form>
+    <form action="/delete_todo_item/{{todo.instance.unique_id}}" method="POST" style="display: inline;">
+      {% csrf_token %}
+      <input type="submit" value="Delete">
+    </form>
+  </li>
+
+{% endfor %}
+
+</ul>
+
+<form action="/new_todo_item/" method="post">
+  {% csrf_token %}
+  {{ form }}
+  <input type="submit" value="Submit">
+</form>
+
+</div>
+
+{% endblock %}

@@ -5,20 +5,24 @@
   <div class="container">
 
 
-<h2>Todo List For Today</h2>
+<h2>{{title}}</h2>
 
 
 <ul>
 
 {% for todo in todo_logs %}
     <li>
-      <form action="/today/{{todo.instance.unique_id}}" method="post">
+      <form action="/update_todo_log/{{todo.instance.unique_id}}" method="post" style="display: inline;">
         {% csrf_token %}
         {{ todo.completion }}
         <span style="font-weight:bold;">{{ todo.description }}</span> - ({{ todo.duration }}m) %{{ todo.tag }} 
         <span style="display: none;">{{ todo.date }}</span>
         
         <input type="submit" value="Update">
+      </form>
+      <form action="/delete_todo_log/{{todo.instance.unique_id}}" method="POST" style="display: inline;">
+        {% csrf_token %}
+        <input type="submit" value="Delete">
       </form>
     </li>
 {% endfor %}
@@ -30,6 +34,12 @@
 {% else %}
 <h4>Streak: {{streak}} days</h4>
 {% endif %}
+
+<form action="/new_todo_log/" method="post">
+  {% csrf_token %}
+  {{ form }}
+  <input type="submit" value="Submit">
+</form>
 
 <h3>
 Stats:
@@ -43,6 +53,8 @@ Stats:
 <div>
     <span style="font-weight:bold;">Total time:</span> {{total_time.0}}hr{{total_time.1}}m
 </div>
+
+
 </div>
 
 {% endblock %}

@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('hello', '0004_remove_todoitem_name_remove_todolog_name'),
+        ('todo', '0004_remove_todoitem_name_remove_todolog_name'),
     ]
 
     operations = [

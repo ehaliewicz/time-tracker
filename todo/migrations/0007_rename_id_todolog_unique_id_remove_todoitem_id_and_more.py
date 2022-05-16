@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('hello', '0006_alter_todolog_id'),
+        ('todo', '0006_alter_todolog_id'),
     ]
 
     operations = [
