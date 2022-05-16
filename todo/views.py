@@ -80,9 +80,9 @@ def delete_todo_item(request, item_id):
     return redirect(request.META.get('HTTP_REFERER'))
 
 
-def calculate_stats():
+def calculate_stats(date):
     
-    today = datetime.date.today()
+    #today = datetime.date.today()
     start_of_week = today-datetime.timedelta(days=7)
     todo_logs_for_today = TodoLog.objects.filter(date=today, completion=True)
     completed_time = sum([log.duration for log in todo_logs_for_today])
