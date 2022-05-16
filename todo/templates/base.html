@@ -67,6 +67,16 @@
         <a href="/todo_list"><span class="glyphicon glyphicon-home"></span> Todo List</a>
       </li>
       {% endif %}
+      
+      {% if request.path == "/import_log_file/" %}
+      <li class="active">
+        <a href="/import_log_file"><span class="glyphicon glyphicon-home"></span> Import Log File</a>
+      </li>
+      {% else %}
+      <li>
+        <a href="/import_log_file"><span class="glyphicon glyphicon-home"></span> Import Log File</a>
+      </li>
+      {% endif %}
     </ul>
   </div>
 </nav>

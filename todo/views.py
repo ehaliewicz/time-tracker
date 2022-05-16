@@ -2,6 +2,7 @@ from django.shortcuts import redirect, render
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_protect
 from django.views import View
+from django import forms
 import dateutil.parser
 import logging
 
@@ -16,6 +17,111 @@ def todoItemToLog(item, date):
         date=date
     )
 
+class ImportLogsForm(forms.Form):
+    log_file = forms.FileField()
+    
+
+
+### parsing and unparsing
+def skip_char(c, line):
+    if len(line) == 0:
+        raise Exception("Expected '{}' but got EOL".format(c))
+    if line[0] != c:
+        raise Exception("Expected '{}' but got '{}'".format(c, line[0]))
+
+    return line[1:]
+
+def skip_string(s, line):
+    while len(s) > 0:
+        line = skip_char(s[0], line)
+        s = s[1:]
+    return line
+        
+def skip_whitespace(line):
+    idx = 0
+    rem = len(line)
+    while rem > 0 and line[idx].isspace():
+        #line = line[1:]
+        idx += 1
+        rem -= 1
+        
+    return line[idx:]
+
+def parse_time(time_str):
+    assert time_str[-1] == 'm', "Expected time with 'm' suffix"
+    return int(time_str[:-1])
+
+
+def parse_todo_line(line, date):
+    line = skip_char('#', line)
+    line = skip_whitespace(line)
+
+    done = False
+    try: 
+        line = skip_string('DONE', line)
+        done = True
+    except:
+        pass
+
+    line = skip_whitespace(line)
+
+    spl = line.split(" (", 1)
+    todo_name, line = spl[0],spl[1]
+    
+    todo_description = todo_name.rstrip()
+    
+    spl = line.split(")", 1)
+    time,line = spl[0],spl[1]
+
+    time_duration = parse_time(time)
+        
+    line = skip_whitespace(line)
+
+    tag = ""
+    if len(line) > 0:
+        # parse a tag
+        line = skip_char('%', line)
+        tag = line.strip()
+    
+    return TodoLog(description=todo_description, duration=time_duration, completion=done, tag=tag, date=date)
+
+
+
+def handle_log_form(form):
+    log_file = form.cleaned_data['log_file']
+    date_str = log_file.name.split("_log.txt")[0]
+    date = dateutil.parser.parse(date_str)
+
+    logs = []
+    for line in log_file:
+        todo_log = parse_todo_line(line.decode('utf-8'), date)
+        logs.append(todo_log)
+        
+    for log in logs:
+        log.save()
+    
+    return date_str
+    
+def import_logs_for_date(request):
+    if request.method == 'POST':
+        form = ImportLogsForm(request.POST, request.FILES)
+        if form.is_valid():
+            date = handle_log_form(form)
+            return redirect('/day/{}'.format(date))
+        else:
+            raise Exception("Error importing log file {}".format(form.errors))
+    else:
+        form = ImportLogsForm()
+        return render(request, "import_logs.html", {
+            "form": form,
+        })
+            
+    pass
+
+
+def import_todo_file(request):
+    pass
+    
 
 def todo_list_or_defaults():
     all_todo_items = TodoItem.objects.all()
@@ -87,19 +193,21 @@ def calculate_stats(date):
     todo_logs_for_today = TodoLog.objects.filter(date=date, completion=True)
     completed_time = sum([log.duration for log in todo_logs_for_today])
 
-    todo_logs_for_week = TodoLog.objects.filter(date__gte=start_of_week, completion=True)
+    todo_logs_for_week = TodoLog.objects.filter(date__gte=start_of_week, date__lte=date, completion=True)
     completed_week = sum([log.duration for log in todo_logs_for_week])
 
     all_todo_logs = list(TodoLog.objects.all())
     completed_total = sum([log.duration for log in all_todo_logs if log.completion])
 
-    completed_dates = set([log.date for log in all_todo_logs if log.completion])
-    
+    completed_dates = set([(log.date.year, log.date.month, log.date.day) for log in all_todo_logs if log.completion])
 
+    def has_date(d):
+        return (d.year,d.month,d.day) in completed_dates
+    
     cur_date = date
     streak = 0
     while True:
-        if not cur_date in completed_dates:
+        if not has_date(cur_date):
             break
         streak += 1
         cur_date = cur_date - datetime.timedelta(days=1)
