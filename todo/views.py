@@ -83,8 +83,8 @@ def delete_todo_item(request, item_id):
 def calculate_stats(date):
     
     #today = datetime.date.today()
-    start_of_week = today-datetime.timedelta(days=7)
-    todo_logs_for_today = TodoLog.objects.filter(date=today, completion=True)
+    start_of_week = date-datetime.timedelta(days=7)
+    todo_logs_for_today = TodoLog.objects.filter(date=date, completion=True)
     completed_time = sum([log.duration for log in todo_logs_for_today])
 
     todo_logs_for_week = TodoLog.objects.filter(date__gte=start_of_week, completion=True)
@@ -96,7 +96,7 @@ def calculate_stats(date):
     completed_dates = set([log.date for log in all_todo_logs if log.completion])
     
 
-    cur_date = datetime.date.today()
+    cur_date = date
     streak = 0
     while True:
         if not cur_date in completed_dates:
@@ -134,7 +134,7 @@ def inner_date_todo_logs(request, date, title):
 
         todo_logs_for_today = new_todo_logs
 
-    calced_stats = calculate_stats()
+    calced_stats = calculate_stats(date)
 
     new_log = TodoLog(date=date)
     form = TodoLogForm(instance=new_log)
