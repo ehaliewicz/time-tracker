@@ -187,14 +187,15 @@ def delete_todo_item(request, item_id):
     return redirect(request.META.get('HTTP_REFERER'))
 
 def get_tag_info(todo_logs):
+    for log in todo_logs:
+        if log.tag is None or log.tag == "":
+            log.tag = "untagged"
     time_lookup = collections.defaultdict(int)
     tag_counts = collections.Counter([log.tag for log in todo_logs])
     for log in todo_logs:
         time_lookup[log.tag] += log.duration
     for (tag,cnt) in tag_counts.items():
         if tag == "" or tag is None:
-            yield ("untagged",cnt,get_hr_min(time_lookup[tag]))
-        else:
             yield (tag,cnt,get_hr_min(time_lookup[tag]))
 
 def calculate_stats(date):
