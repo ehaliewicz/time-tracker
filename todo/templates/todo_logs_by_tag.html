@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+  <div class="container">
+
+
+<h2>Logs with tag "{{tag}}"</h2>
+
+
+<ul>
+
+{% for todo in todo_logs %}
+<li>
+    <form action="/update_todo_log/{{todo.instance.unique_id}}" method="post" style="display: inline;">
+      {% csrf_token %}
+      {{ todo.completion }}
+      <span style="font-weight:bold;">{{ todo.description }}</span> - ({{ todo.duration }}m) %{{ todo.tag }} 
+      <span style="display: none;">{{ todo.date }}</span>
+      
+      <input type="submit" value="Update">
+    </form>
+    <form action="/delete_todo_log/{{todo.instance.unique_id}}" method="POST" style="display: inline;">
+      {% csrf_token %}
+      <input type="submit" value="Delete">
+    </form>
+  </li>
+{% endfor %}
+
+</ul>
+
+</div>
+
+{% endblock %}

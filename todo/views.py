@@ -330,3 +330,11 @@ def todo_list(request):
 def redirect_to_today(request):
     return redirect("/today")
 
+
+def list_todo_logs_for_tag(request, tag):
+    q = TodoLog.objects.filter(tag=tag)
+    return render(request, "todo_logs_by_tag.html",
+            {
+                "tag": tag,
+                "todo_logs": [TodoLogForm(instance=log) for log in q]
+            })
