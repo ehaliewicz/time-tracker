@@ -24,6 +24,7 @@ urlpatterns = [
     path("delete_todo_item/<int:item_id>", todo.views.delete_todo_item, name="delete todo item"),
 
     path("day/<str:date>", todo.views.date_todos, name="date todos"),
+    path("day/<str:date>/", todo.views.date_todos, name="date todos"),
     path("today/", todo.views.todays_todos, name="todays todos"),
 
     path("todo_list/", todo.views.todo_list, name="todo list"),

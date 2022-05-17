@@ -13,7 +13,7 @@ class TodoLog(models.Model):
     completion = models.BooleanField(default=False)
     description = models.CharField(max_length=1024)
     duration = models.IntegerField()
-    tag = models.CharField(max_length=128)
+    tag = models.CharField(max_length=128, null=True, blank=True)
     date = models.DateField()
 
 class TodoItemForm(ModelForm):
