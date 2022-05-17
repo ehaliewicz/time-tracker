@@ -200,8 +200,14 @@ def get_tag_info(todo_logs):
 def calculate_stats(date):
     
     start_of_week = date-datetime.timedelta(days=7)
-    todo_logs_for_today = TodoLog.objects.filter(date=date, completion=True)
-    completed_time = sum([log.duration for log in todo_logs_for_today])
+
+    all_todo_logs_for_today = TodoLog.objects.filter(date=date)
+    completed_todo_logs_for_today = [t for t in all_todo_logs_for_today if t.completion]
+    pct_tasks = round(100*len(completed_todo_logs_for_today)/len(all_todo_logs_for_today), 2)
+    pct_time = round(100*sum([t.duration for t in completed_todo_logs_for_today])/sum([t.duration for t in all_todo_logs_for_today]), 2)
+    
+    
+    completed_time = sum([log.duration for log in all_todo_logs_for_today])
 
     todo_logs_for_week = TodoLog.objects.filter(date__gte=start_of_week, date__lte=date, completion=True)
     completed_week = sum([log.duration for log in todo_logs_for_week])
@@ -211,7 +217,7 @@ def calculate_stats(date):
 
     completed_dates = set([(log.date.year, log.date.month, log.date.day) for log in all_todo_logs])
 
-    todays_tags = get_tag_info(todo_logs_for_today)
+    todays_tags = get_tag_info(completed_todo_logs_for_today)
     week_tags = get_tag_info(todo_logs_for_week)
     all_tags = get_tag_info(all_todo_logs)
 
@@ -231,6 +237,8 @@ def calculate_stats(date):
 
 
     return {
+        'percent_tasks': pct_tasks,
+        'percent_time': pct_time,
         'completed_time': get_hr_min(completed_time),
         'completed_week_time': get_hr_min(completed_week),
         'total_time': get_hr_min(completed_total),
