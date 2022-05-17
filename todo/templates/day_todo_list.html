@@ -39,7 +39,9 @@
   {% csrf_token %}
   {{ form }}
   <input type="submit" value="Submit">
+  <input id="start-button" type="button" value="Start">
 </form>
+
 
 <h3>
 Stats:
@@ -74,4 +76,45 @@ Stats:
 
 </div>
 
+  <script type="text/javascript">
+    (function() {
+	var intFunc;
+	const ref = $("input[type=number]").last();
+
+	var bindToStart = function() {
+
+	    var val;
+	    $("#start-button").unbind("click", bindToStart);
+	    $("#start-button").on("click", bindToStop);
+	    
+	    $("#start-button").val("Stop");
+
+	    if(ref.val() == '') {
+		val = 0;
+		ref.val(val);
+	    } else {
+		val = parseInt(ref.val());
+	    }
+
+	    intFunc = setInterval(function() {
+		val += 1;
+		console.log(val);
+		ref.val(val);
+	    }, 1000*60);
+	}
+
+	var bindToStop = function() {
+	    
+	    clearInterval(intFunc);
+	    intFunc = null;
+	    $("#start-button").unbind("click", bindToStop);
+	    $("#start-button").on("click", bindToStart);
+	    $("#start-button").val("Start");
+	    
+	}
+	$("#start-button").on("click", bindToStart);
+
+    })();
+  </script>
+  
 {% endblock %}
