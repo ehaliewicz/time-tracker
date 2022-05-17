@@ -186,10 +186,19 @@ def delete_todo_item(request, item_id):
 
     return redirect(request.META.get('HTTP_REFERER'))
 
+def get_tag_info(todo_logs):
+    time_lookup = collections.defaultdict(int)
+    tag_counts = collections.Counter([log.tag for log in todo_logs])
+    for log in todo_logs:
+        time_lookup[log.tag] += log.duration
+    for (tag,cnt) in tag_counts.items():
+        if tag == "":
+            yield ("untagged",cnt,get_hr_min(time_lookup[tag]))
+        else:
+            yield (tag,cnt,get_hr_min(time_lookup[tag]))
 
 def calculate_stats(date):
     
-    #today = datetime.date.today()
     start_of_week = date-datetime.timedelta(days=7)
     todo_logs_for_today = TodoLog.objects.filter(date=date, completion=True)
     completed_time = sum([log.duration for log in todo_logs_for_today])
@@ -202,18 +211,10 @@ def calculate_stats(date):
 
     completed_dates = set([(log.date.year, log.date.month, log.date.day) for log in all_todo_logs if log.completion])
 
-    todays_tags = collections.Counter([log.tag for log in todo_logs_for_today])
-    week_tags = collections.Counter([log.tag for log in todo_logs_for_week])
-    all_tags = collections.Counter([log.tag for log in all_todo_logs])
-    if '' in todays_tags:
-        todays_tags['untagged'] = todays_tags['']
-        del todays_tags['']
-    if '' in week_tags:
-        week_tags['untagged'] = week_tags['']
-        del week_tags['']
-    if '' in all_tags:
-        all_tags['untagged'] = all_tags['']
-        del all_tags['']
+    todays_tags = get_tag_info(todo_logs_for_today)
+    week_tags = get_tag_info(todo_logs_for_week)
+    all_tags = get_tag_info(all_todo_logs)
+
 
     def has_date(d):
         return (d.year,d.month,d.day) in completed_dates
@@ -226,13 +227,16 @@ def calculate_stats(date):
         streak += 1
         cur_date = cur_date - datetime.timedelta(days=1)
 
+    ##todays_tag_items = ((tag,cnt, get_hr_min(todays_tag_time_lookup[tag])) for tag,cnt in todays_tags.items())
+
 
     return {
         'completed_time': get_hr_min(completed_time),
         'completed_week_time': get_hr_min(completed_week),
         'total_time': get_hr_min(completed_total),
         'streak': streak,
-        'tags': [('Todays tags', todays_tags.items()), ('Week tags', week_tags.items()), ('All tags', all_tags.items())],
+        'tags': [('Todays tags', list(todays_tags)), ('Week tags', list(week_tags)), ('All tags', list(all_tags))],
+
     }
 
 
