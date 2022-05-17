@@ -5,7 +5,7 @@ class TodoItem(models.Model):
     unique_id = models.AutoField(primary_key=True)
     description = models.CharField(max_length=1024)
     duration = models.IntegerField()
-    tag = models.CharField(max_length=128)
+    tag = models.CharField(max_length=128, null=True, blank=True)
 
 
 class TodoLog(models.Model):
@@ -25,3 +25,7 @@ class TodoLogForm(ModelForm):
     class Meta:
         model = TodoLog
         fields = '__all__'
+
+class Tag(models.Model):
+    name = models.CharField(primary_key=True, null=False, max_length=128)
+    
