@@ -232,9 +232,7 @@ def calculate_stats(date):
         'completed_week_time': get_hr_min(completed_week),
         'total_time': get_hr_min(completed_total),
         'streak': streak,
-        'completed_tags': todays_tags.items(),
-        'week_tags': week_tags.items(),
-        'all_tags': all_tags.items()
+        'tags': [('Todays tags', todays_tags.items()), ('Week tags', week_tags.items()), ('All tags', all_tags.items())],
     }
 
 
