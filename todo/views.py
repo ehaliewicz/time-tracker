@@ -207,9 +207,9 @@ def calculate_stats(date):
     completed_week = sum([log.duration for log in todo_logs_for_week])
 
     all_todo_logs = list(TodoLog.objects.all(completion=True))
-    completed_total = sum([log.duration for log in all_todo_logs if log.completion])
+    completed_total = sum([log.duration for log in all_todo_logs])
 
-    completed_dates = set([(log.date.year, log.date.month, log.date.day) for log in all_todo_logs if log.completion])
+    completed_dates = set([(log.date.year, log.date.month, log.date.day) for log in all_todo_logs])
 
     todays_tags = get_tag_info(todo_logs_for_today)
     week_tags = get_tag_info(todo_logs_for_week)
