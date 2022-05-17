@@ -195,8 +195,7 @@ def get_tag_info(todo_logs):
     for log in todo_logs:
         time_lookup[log.tag] += log.duration
     for (tag,cnt) in tag_counts.items():
-        if tag == "" or tag is None:
-            yield (tag,cnt,get_hr_min(time_lookup[tag]))
+        yield (tag,cnt,get_hr_min(time_lookup[tag]))
 
 def calculate_stats(date):
     
