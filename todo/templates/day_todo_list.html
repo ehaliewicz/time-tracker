@@ -54,6 +54,32 @@ Stats:
     <span style="font-weight:bold;">Total time:</span> {{total_time.0}}hr{{total_time.1}}m
 </div>
 
+<h3>
+  Todays Tags:
+</h3>
+<ul>
+  {% for tag in completed_tags %}
+  <li>{{tag}}</li>
+  {% endfor %}
+</ul>
+<h3>
+  Week Tags:
+</h3>
+<ul>
+  {% for tag in week_tags %}
+  <li>{{tag.1}} {{tag.0}}(s) </li>
+  {% endfor %}
+</ul>
+<h3>
+  All Tags:
+</h3>
+<ul>
+  {% for tag in all_tags %}
+  <li>{{tag.1}} {{tag.0}}(s) </li>
+  {% endfor %}
+</ul>
+
+
 
 </div>
 

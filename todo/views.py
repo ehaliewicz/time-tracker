@@ -8,6 +8,7 @@ import logging
 
 from .models import TodoItem, TodoLog, TodoItemForm, TodoLogForm
 import datetime
+import collections
 
 def todoItemToLog(item, date):
     return TodoLog(
@@ -201,6 +202,19 @@ def calculate_stats(date):
 
     completed_dates = set([(log.date.year, log.date.month, log.date.day) for log in all_todo_logs if log.completion])
 
+    todays_tags = collections.Counter([log.tag for log in todo_logs_for_today])
+    week_tags = collections.Counter([log.tag for log in todo_logs_for_week])
+    all_tags = collections.Counter([log.tag for log in all_todo_logs])
+    if '' in todays_tags:
+        todays_tags['untagged'] = todays_tags['']
+        del todays_tags['']
+    if '' in week_tags:
+        week_tags['untagged'] = week_tags['']
+        del week_tags['']
+    if '' in all_tags:
+        all_tags['untagged'] = all_tags['']
+        del all_tags['']
+
     def has_date(d):
         return (d.year,d.month,d.day) in completed_dates
     
@@ -217,7 +231,10 @@ def calculate_stats(date):
         'completed_time': get_hr_min(completed_time),
         'completed_week_time': get_hr_min(completed_week),
         'total_time': get_hr_min(completed_total),
-        'streak': streak
+        'streak': streak,
+        'completed_tags': todays_tags.items(),
+        'week_tags': week_tags.items(),
+        'all_tags': all_tags.items()
     }
 
 
