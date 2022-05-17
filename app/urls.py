@@ -31,5 +31,7 @@ urlpatterns = [
     path("", todo.views.redirect_to_today, name=""),
 
     path("import_log_file/", todo.views.import_logs_for_date, name="import logs for date"),
-    path("immport_todo_file", todo.views.import_todo_file, name="import todo file")
+    path("import_todo_file", todo.views.import_todo_file, name="import todo file"),
+
+    path("logs_by_tag/<str:tag>", todo.views.list_todo_logs_for_tag, name="list todos for tag")
 ]
