@@ -235,7 +235,7 @@ def calculate_stats(date):
         'completed_week_time': get_hr_min(completed_week),
         'total_time': get_hr_min(completed_total),
         'streak': streak,
-        'tags': [('Todays tags', list(todays_tags)), ('Week tags', list(week_tags)), ('All tags', list(all_tags))],
+        'tags': [("This day's tags", list(todays_tags)), ('Week tags', list(week_tags)), ('All tags', list(all_tags))],
 
     }
 
