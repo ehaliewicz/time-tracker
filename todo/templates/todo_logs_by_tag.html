@@ -15,7 +15,7 @@
     <form action="/update_todo_log/{{todo.instance.unique_id}}" method="post" style="display: inline;">
       {% csrf_token %}
       {{ todo.completion }}
-      <span style="font-weight:bold;">{{ todo.description }}</span> - ({{ todo.duration }}m) %{{ todo.tag }} 
+      <span style="font-weight:bold;">{{ todo.description }}</span> - {{ todo.duration }}m %{{ todo.tag }} 
       <span>{{ todo.date }}</span>
       
       <input type="submit" value="Update">
