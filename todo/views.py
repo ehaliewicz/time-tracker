@@ -204,10 +204,12 @@ def calculate_stats(date):
     all_todo_logs_for_today = TodoLog.objects.filter(date=date)
     completed_todo_logs_for_today = [t for t in all_todo_logs_for_today if t.completion]
     pct_tasks = round(100*len(completed_todo_logs_for_today)/len(all_todo_logs_for_today), 2)
-    pct_time = round(100*sum([t.duration for t in completed_todo_logs_for_today])/sum([t.duration for t in all_todo_logs_for_today]), 2)
-    
-    
+
     completed_time = sum([log.duration for log in completed_todo_logs_for_today])
+    
+    pct_time = round(100*completed_time/sum([t.duration for t in all_todo_logs_for_today]), 2)
+    
+    
 
     todo_logs_for_week = TodoLog.objects.filter(date__gte=start_of_week, date__lte=date, completion=True)
     completed_week = sum([log.duration for log in todo_logs_for_week])

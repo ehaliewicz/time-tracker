@@ -16,6 +16,14 @@ class TodoLog(models.Model):
     tag = models.CharField(max_length=128, null=True, blank=True)
     date = models.DateField()
 
+    class Meta:
+        indexes = [
+            # query all logs for today
+            # query all completed logs for this week
+            # query all completed logs for all time
+            models.Index(fields=['completion', 'date'])
+        ]
+    
 class TodoItemForm(ModelForm):
     class Meta:
         model = TodoItem
