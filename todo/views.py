@@ -5,7 +5,7 @@ from django.views import View
 from django import forms
 import dateutil.parser
 import logging
-from django.db import models
+from django.db import models,connection
 from .models import TodoItem, TodoLog, TodoItemForm, TodoLogForm
 import datetime
 import collections
@@ -192,6 +192,7 @@ def get_stats_for_filters(**filter_kwargs):
         time=models.Sum('duration',default=0),
         count=models.Count('unique_id')
     )
+    
     time = time_count_stats['time']
     count = time_count_stats['count']
     tags = (TodoLog.objects
@@ -206,9 +207,9 @@ def get_stats_for_filters(**filter_kwargs):
             tag = 'Untagged'
         if tag not in processed_tags_d:
             processed_tags_d[tag] = (0,0)
-        cnt,time = processed_tags_d[tag]
+        cnt,tme = processed_tags_d[tag]
         cnt += t['count']
-        time += t['time']
+        tme += t['time']
         processed_tags_d[tag] = cnt,time
 
         
@@ -219,7 +220,7 @@ def get_stats_for_filters(**filter_kwargs):
 def calculate_stats(date):
     
     start_of_week = date-datetime.timedelta(days=7)
-
+    
     time_for_today, num_tasks_for_today, _ = get_stats_for_filters(date=date)
     completed_time_for_today, num_completed_tasks_for_today, todays_tags = get_stats_for_filters(
         date=date, completion=True
@@ -230,8 +231,6 @@ def calculate_stats(date):
     completed_all_time, completed_all_tasks, all_tags = get_stats_for_filters(
         completion=True
     )
-
-    
 
     pct_tasks = round((num_completed_tasks_for_today*100)/num_tasks_for_today, 2)
     pct_time = round((completed_time_for_today*100)/time_for_today, 2)
