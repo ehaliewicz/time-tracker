@@ -187,7 +187,7 @@ def delete_todo_item(request, item_id):
     return redirect(request.META.get('HTTP_REFERER'))
 
 
-def get_stats_for_filters(**filter_kwargs):
+def get_stats_for_filters(tags, **filter_kwargs):
     time_count_stats = TodoLog.objects.filter(**filter_kwargs).aggregate(
         time=models.Sum('duration',default=0),
         count=models.Count('unique_id')
@@ -195,45 +195,50 @@ def get_stats_for_filters(**filter_kwargs):
     
     time = time_count_stats['time']
     count = time_count_stats['count']
-    tags = (TodoLog.objects
-            .filter(**filter_kwargs)
-            .values('tag')
-            .annotate(count=models.Count('tag'),time=models.Sum('duration')))
+    if tags:
+        tags = (TodoLog.objects
+                .filter(**filter_kwargs)
+                .values('tag')
+                .annotate(count=models.Count('tag'),time=models.Sum('duration')))
     
-    processed_tags_d = {}
-    for t in tags:
-        tag = t['tag']
-        if tag is None or tag == '':
-            tag = 'Untagged'
-        if tag not in processed_tags_d:
-            processed_tags_d[tag] = (0,0)
-        cnt,tme = processed_tags_d[tag]
-        cnt += t['count']
-        tme += t['time']
-        processed_tags_d[tag] = cnt,time
+        processed_tags_d = {}
+        for t in tags:
+            tag = t['tag']
+            if tag is None or tag == '':
+                tag = 'Untagged'
+            if tag not in processed_tags_d:
+                processed_tags_d[tag] = (0,0)
+            cnt,tme = processed_tags_d[tag]
+            cnt += t['count']
+            tme += t['time']
+            processed_tags_d[tag] = cnt,time
 
         
-    processed_tags = [(tag,cnt,get_hr_min(time)) for (tag,(cnt,time)) in processed_tags_d.items()]
-    
-    return time,count,processed_tags
-    
+        processed_tags = [(tag,cnt,get_hr_min(time)) for (tag,(cnt,time)) in processed_tags_d.items()]
+        return time,count,processed_tags
+    else:
+        return time,count,[]
+
 def calculate_stats(date):
     
     start_of_week = date-datetime.timedelta(days=7)
     
-    time_for_today, num_tasks_for_today, _ = get_stats_for_filters(date=date)
+    time_for_today, num_tasks_for_today, _ = get_stats_for_filters(tags=False, date=date)
     completed_time_for_today, num_completed_tasks_for_today, todays_tags = get_stats_for_filters(
-        date=date, completion=True
+        tags=True, date=date, completion=True
     )
     completed_time_for_week, completed_tasks_for_week, week_tags = get_stats_for_filters(
-        date__gte=start_of_week, date__lte=date, completion=True
+        tags=True, date__gte=start_of_week, date__lte=date, completion=True
     )
     completed_all_time, completed_all_tasks, all_tags = get_stats_for_filters(
-        completion=True
+        tags=True, completion=True
     )
 
-    pct_tasks = round((num_completed_tasks_for_today*100)/num_tasks_for_today, 2)
-    pct_time = round((completed_time_for_today*100)/time_for_today, 2)
+    pct_tasks = 0
+    pct_time = 0
+    if num_tasks_for_today != 0:
+        pct_tasks = round((num_completed_tasks_for_today*100)/num_tasks_for_today, 2)
+        pct_time = round((completed_time_for_today*100)/time_for_today, 2)
 
 
     dates = TodoLog.objects.filter(completion=True).values('date').annotate(count=models.Count('date'))
@@ -257,6 +262,7 @@ def calculate_stats(date):
         'percent_time': pct_time,
         'completed_time': get_hr_min(completed_time_for_today),
         'completed_week_time': get_hr_min(completed_time_for_week),
+        'total_tasks': num_tasks_for_today,
         'total_time': get_hr_min(completed_all_time),
         'streak': streak,
         'tags': [("This day's tags", list(todays_tags)), ('Week tags', list(week_tags)), ('All tags', list(all_tags))],
@@ -269,10 +275,9 @@ def get_hr_min(m):
 
 
 def inner_date_todo_logs(request, date, title):
-
-    todo_logs_for_today = TodoLog.objects.filter(date=date).order_by('unique_id')
-
-    if len(todo_logs_for_today) == 0:
+    calced_stats = calculate_stats(date)
+    
+    if calced_stats['total_tasks'] == 0:
         # create a list of TodoLogs from TodoItems
         all_todo_items = todo_list_or_defaults() #TodoItem.objects.all()
 
@@ -283,8 +288,9 @@ def inner_date_todo_logs(request, date, title):
             new_todo_logs.append(log)
 
         todo_logs_for_today = new_todo_logs
-
-    calced_stats = calculate_stats(date)
+        calced_stats = calced_stats(date)
+    else:
+        todo_logs_for_today = TodoLog.objects.filter(date=date).order_by('unique_id')
 
     new_log = TodoLog(date=date)
     form = TodoLogForm(instance=new_log)
