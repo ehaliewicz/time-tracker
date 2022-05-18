@@ -2,6 +2,13 @@ from django.urls import path, include
 
 from django.contrib import admin
 
+from django.views.generic.base import RedirectView
+from django.contrib.staticfiles.storage import staticfiles_storage
+
+from . import settings
+from django.conf.urls.static import static
+
+
 admin.autodiscover()
 
 import todo.views
@@ -33,5 +40,7 @@ urlpatterns = [
     path("import_log_file/", todo.views.import_logs_for_date, name="import logs for date"),
     path("import_todo_file", todo.views.import_todo_file, name="import todo file"),
 
-    path("logs_by_tag/<str:tag>", todo.views.list_todo_logs_for_tag, name="list todos for tag")
+    path("logs_by_tag/<str:tag>", todo.views.list_todo_logs_for_tag, name="list todos for tag"),
+    
+    path('favicon.ico', RedirectView.as_view(url=staticfiles_storage.url('img/favicon.ico')))
 ]
