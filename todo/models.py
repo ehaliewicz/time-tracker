@@ -26,6 +26,4 @@ class TodoLogForm(ModelForm):
         model = TodoLog
         fields = '__all__'
 
-class Tag(models.Model):
-    name = models.CharField(primary_key=True, null=False, max_length=128)
     
