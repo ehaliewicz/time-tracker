@@ -5,7 +5,7 @@ from django.views import View
 from django import forms
 import dateutil.parser
 import logging
-
+from django.db import models
 from .models import TodoItem, TodoLog, TodoItemForm, TodoLogForm
 import datetime
 import collections
@@ -186,42 +186,46 @@ def delete_todo_item(request, item_id):
 
     return redirect(request.META.get('HTTP_REFERER'))
 
-def get_tag_info(todo_logs):
-    for log in todo_logs:
-        if log.tag is None or log.tag == "":
-            log.tag = "untagged"
-    time_lookup = collections.defaultdict(int)
-    tag_counts = collections.Counter([log.tag for log in todo_logs])
-    for log in todo_logs:
-        time_lookup[log.tag] += log.duration
-    for (tag,cnt) in tag_counts.items():
-        yield (tag,cnt,get_hr_min(time_lookup[tag]))
 
+def get_stats_for_filters(**filter_kwargs):
+    time_count_stats = TodoLog.objects.filter(**filter_kwargs).aggregate(
+        time=models.Sum('duration',default=0),
+        count=models.Count('unique_id')
+    )
+    time = time_count_stats['time']
+    count = time_count_stats['count']
+    tags = (TodoLog.objects
+            .filter(**filter_kwargs)
+            .values('tag')
+            .annotate(count=models.Count('tag'),time=models.Sum('duration')))
+
+    processed_tags = [(t['tag'],t['count'],get_hr_min(t['time'])) for t in tags]
+    
+    return time,count,processed_tags
+    
 def calculate_stats(date):
     
     start_of_week = date-datetime.timedelta(days=7)
 
-    all_todo_logs_for_today = TodoLog.objects.filter(date=date)
-    completed_todo_logs_for_today = [t for t in all_todo_logs_for_today if t.completion]
-    pct_tasks = round(100*len(completed_todo_logs_for_today)/len(all_todo_logs_for_today), 2)
+    time_for_today, num_tasks_for_today, _ = get_stats_for_filters(date=date)
+    completed_time_for_today, num_completed_tasks_for_today, todays_tags = get_stats_for_filters(
+        date=date, completion=True
+    )
+    completed_time_for_week, completed_tasks_for_week, week_tags = get_stats_for_filters(
+        date__gte=start_of_week, date__lte=date, completion=True
+    )
+    completed_all_time, completed_all_tasks, all_tags = get_stats_for_filters(
+        completion=True
+    )
 
-    completed_time = sum([log.duration for log in completed_todo_logs_for_today])
     
-    pct_time = round(100*completed_time/sum([t.duration for t in all_todo_logs_for_today]), 2)
-    
-    
 
-    todo_logs_for_week = TodoLog.objects.filter(date__gte=start_of_week, date__lte=date, completion=True)
-    completed_week = sum([log.duration for log in todo_logs_for_week])
+    pct_tasks = round((num_completed_tasks_for_today*100)/num_tasks_for_today, 2)
+    pct_time = round((completed_time_for_today*100)/time_for_today, 2)
 
-    all_todo_logs = list(TodoLog.objects.filter(completion=True))
-    completed_total = sum([log.duration for log in all_todo_logs])
 
-    completed_dates = set([(log.date.year, log.date.month, log.date.day) for log in all_todo_logs])
-
-    todays_tags = get_tag_info(completed_todo_logs_for_today)
-    week_tags = get_tag_info(todo_logs_for_week)
-    all_tags = get_tag_info(all_todo_logs)
+    dates = TodoLog.objects.filter(completion=True).values('date').annotate(count=models.Count('date'))
+    completed_dates = set((d.year, d.month, d.day) for d in (r['date'] for r in dates))
 
 
     def has_date(d):
@@ -235,18 +239,15 @@ def calculate_stats(date):
         streak += 1
         cur_date = cur_date - datetime.timedelta(days=1)
 
-    ##todays_tag_items = ((tag,cnt, get_hr_min(todays_tag_time_lookup[tag])) for tag,cnt in todays_tags.items())
-
 
     return {
         'percent_tasks': pct_tasks,
         'percent_time': pct_time,
-        'completed_time': get_hr_min(completed_time),
-        'completed_week_time': get_hr_min(completed_week),
-        'total_time': get_hr_min(completed_total),
+        'completed_time': get_hr_min(completed_time_for_today),
+        'completed_week_time': get_hr_min(completed_time_for_week),
+        'total_time': get_hr_min(completed_all_time),
         'streak': streak,
         'tags': [("This day's tags", list(todays_tags)), ('Week tags', list(week_tags)), ('All tags', list(all_tags))],
-
     }
 
 
