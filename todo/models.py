@@ -22,7 +22,8 @@ class TodoLog(models.Model):
             # query all completed logs for this week
             # query all completed logs for all time
             models.Index(fields=['completion', 'date']),
-            models.Index(fields=['date'])
+            models.Index(fields=['date']),
+            models.Index(fields=['tag'])
         ]
     
 class TodoItemForm(ModelForm):
