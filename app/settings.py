@@ -98,7 +98,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 INTERNAL_IPS = [
-    "127.0.0.1", "2601:647:5e00:cb2:74b8:8108:8b6b:2818", "73.63.250.206"
+    "127.0.0.1"
 ]
 
 # Internationalization
