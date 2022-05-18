@@ -198,8 +198,21 @@ def get_stats_for_filters(**filter_kwargs):
             .filter(**filter_kwargs)
             .values('tag')
             .annotate(count=models.Count('tag'),time=models.Sum('duration')))
+    
+    processed_tags_d = {}
+    for t in tags:
+        tag = t['tag']
+        if tag is None or tag == '':
+            tag = 'Untagged'
+        if tag not in processed_tags_d:
+            processed_tags_d[tag] = (0,0)
+        cnt,time = processed_tags_d[tag]
+        cnt += t['count']
+        time += t['time']
+        processed_tags_d[tag] = cnt,time
 
-    processed_tags = [(t['tag'],t['count'],get_hr_min(t['time'])) for t in tags]
+        
+    processed_tags = [(tag,cnt,get_hr_min(time)) for (tag,(cnt,time)) in processed_tags_d.items()]
     
     return time,count,processed_tags
     
