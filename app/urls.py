@@ -42,5 +42,8 @@ urlpatterns = [
 
     path("logs_by_tag/<str:tag>", todo.views.list_todo_logs_for_tag, name="list todos for tag"),
     
-    path('favicon.ico', RedirectView.as_view(url=staticfiles_storage.url('img/favicon.ico')))
+    path('favicon.ico', RedirectView.as_view(url=staticfiles_storage.url('img/favicon.ico'))),
+
+    path('__debug__/', include('debug_toolbar.urls')),
+    
 ]
