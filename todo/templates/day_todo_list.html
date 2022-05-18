@@ -77,30 +77,41 @@ Stats:
 </div>
 
   <script type="text/javascript">
+    
     (function() {
+	var globalTimer;
+
+	var time = function(x) {
+	    const mins = Math.round(x/60);
+	    
+	    let seconds = Math.round(x%60);
+
+	    return mins + (seconds/100);
+	    
+	}
+	
 	var intFunc;
 	const ref = $("input[type=number]").last();
-
+	console.log("ref", ref);
+	
 	var bindToStart = function() {
 
-	    var val;
 	    $("#start-button").unbind("click", bindToStart);
 	    $("#start-button").on("click", bindToStop);
 	    
 	    $("#start-button").val("Stop");
+	    
+	    globalTimer = Date.now();
+	    const curTimer = Date.now();
+	    const t = (curTimer - globalTimer)/1000;
+	    ref.val(time(t));
 
-	    if(ref.val() == '') {
-		val = 0;
-		ref.val(val);
-	    } else {
-		val = parseInt(ref.val());
-	    }
 
 	    intFunc = setInterval(function() {
-		val += 1;
-		console.log(val);
-		ref.val(val);
-	    }, 1000*60);
+		const curTimer = Date.now();
+		const t = (curTimer - globalTimer)/1000;
+		ref.val(time(t));
+	    }, 1000);
 	}
 
 	var bindToStop = function() {
