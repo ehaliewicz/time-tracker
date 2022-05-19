@@ -8,10 +8,8 @@
 <h2>{{title}}</h2>
 
 
-<ul>
-
 {% for todo in todo_logs %}
-    <li>
+    <div class="row form-group" style="margin-bottom: 5px;">
       <form action="/update_todo_log/{{todo.instance.unique_id}}" method="post" style="display: inline;">
         {% csrf_token %}
         {{ todo.completion }}
@@ -24,10 +22,9 @@
         {% csrf_token %}
         <input type="submit" value="Delete">
       </form>
-    </li>
+    </div>
 {% endfor %}
 
-</ul>
 
 
 <h3>New Todo Log Entry: </h3>
