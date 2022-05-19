@@ -277,7 +277,7 @@ def calculate_stats(date):
         'percent_time': pct_time,
         'completed_time': get_hr_min(completed_time_for_today),
         'completed_week_time': get_hr_min(completed_time_for_week),
-        'completed_month_time': get_hr_min(completed_time_for_week),
+        'completed_month_time': get_hr_min(completed_time_for_month),
         'total_tasks': num_tasks_for_today,
         'total_time': get_hr_min(completed_all_time),
         'streak': streak,
