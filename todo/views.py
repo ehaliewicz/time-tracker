@@ -187,14 +187,24 @@ def delete_todo_item(request, item_id):
     return redirect(request.META.get('HTTP_REFERER'))
 
 
-def get_stats_for_filters(tags, **filter_kwargs):
-    time_count_stats = TodoLog.objects.filter(**filter_kwargs).aggregate(
-        time=models.Sum('duration',default=0),
-        count=models.Count('unique_id')
-    )
+def get_stats_for_filters(tags, get_num_tasks, **filter_kwargs):
+    count = 0
+    if get_num_tasks:
+        time_count_stats = TodoLog.objects.filter(**filter_kwargs).aggregate(
+            time=models.Sum('duration',default=0),
+            count=models.Count('unique_id')
+        )
     
-    time = time_count_stats['time']
-    count = time_count_stats['count']
+        time = time_count_stats['time']
+        count = time_count_stats['count']
+    else:
+        time_count_stats = TodoLog.objects.filter(**filter_kwargs).aggregate(
+            time=models.Sum('duration',default=0),
+        )
+    
+        time = time_count_stats['time']
+
+    processed_tags = []
     if tags:
         tags = (TodoLog.objects
                 .filter(**filter_kwargs)
@@ -215,23 +225,27 @@ def get_stats_for_filters(tags, **filter_kwargs):
 
         
         processed_tags = [(tag,cnt,get_hr_min(time)) for (tag,(cnt,time)) in processed_tags_d.items()]
-        return time,count,processed_tags
-    else:
-        return time,count,[]
+
+    return time,count,processed_tags
 
 def calculate_stats(date):
     
     start_of_week = date-datetime.timedelta(days=7)
     
-    time_for_today, num_tasks_for_today, _ = get_stats_for_filters(tags=False, date=date)
+    time_for_today, num_tasks_for_today, _ = get_stats_for_filters(
+        tags=False, get_num_tasks=True, date=date
+    )
     completed_time_for_today, num_completed_tasks_for_today, todays_tags = get_stats_for_filters(
-        tags=True, date=date, completion=True
+        tags=True, get_num_tasks=True, date=date, completion=True
     )
-    completed_time_for_week, completed_tasks_for_week, week_tags = get_stats_for_filters(
-        tags=True, date__gte=start_of_week, date__lte=date, completion=True
+    completed_time_for_week, _, week_tags = get_stats_for_filters(
+        tags=True, get_num_tasks=False, date__gte=start_of_week, date__lte=date, completion=True
     )
-    completed_all_time, completed_all_tasks, all_tags = get_stats_for_filters(
-        tags=True, completion=True
+    completed_time_for_month, _, month_tags = get_stats_for_filters(
+        tags=True, get_num_tasks=False, date__gte=start_of_week, date__lte=date, completion=True
+    )
+    completed_all_time, _, all_tags = get_stats_for_filters(
+        tags=True, get_num_tasks=False, completion=True
     )
 
     pct_tasks = 0
@@ -262,10 +276,15 @@ def calculate_stats(date):
         'percent_time': pct_time,
         'completed_time': get_hr_min(completed_time_for_today),
         'completed_week_time': get_hr_min(completed_time_for_week),
+        'completed_month_time': get_hr_min(completed_time_for_week),
         'total_tasks': num_tasks_for_today,
         'total_time': get_hr_min(completed_all_time),
         'streak': streak,
-        'tags': [("This day's tags", list(todays_tags)), ('Week tags', list(week_tags)), ('All tags', list(all_tags))],
+        'tags': [
+            ("This day's tags", list(todays_tags)), 
+            ('Last 7 day\s tags', list(week_tags)), 
+            ('Last 30 day\s tags', list(month_tags)), 
+            ('All tags', list(all_tags))],
     }
 
 

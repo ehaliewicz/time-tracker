@@ -3,17 +3,17 @@ from django.forms import ModelForm
 
 class TodoItem(models.Model):
     unique_id = models.AutoField(primary_key=True)
-    description = models.CharField(max_length=1024)
+    description = models.CharField(max_length=1024, null=False, blank=False)
     duration = models.IntegerField()
-    tag = models.CharField(max_length=128, null=True, blank=True)
+    tag = models.CharField(max_length=128, null=False, blank=True, default="")
 
 
 class TodoLog(models.Model):
     unique_id = models.AutoField(primary_key=True)
     completion = models.BooleanField(default=False)
-    description = models.CharField(max_length=1024)
+    description = models.CharField(max_length=1024, null=False, blank=False)
     duration = models.IntegerField()
-    tag = models.CharField(max_length=128, null=True, blank=True)
+    tag = models.CharField(max_length=128, null=False, blank=True, default="")
     date = models.DateField()
 
     class Meta:
