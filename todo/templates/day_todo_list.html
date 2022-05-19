@@ -29,14 +29,8 @@
 
 </ul>
 
-{% if streak >= 2 %}
-<h4>Streak: {{streak}} days!</h4>
-{% elif streak == 1 %}
-<h4>Streak: 1 day</h4>
-{% else %}
-<h4>Streak: 0 days :(</h4>
-{% endif %}
 
+<h3>New Todo Log Entry: </h3>
 <form action="/new_todo_log/" method="post">
   {% csrf_token %}
   {{ form.completion }}
@@ -44,14 +38,21 @@
   <label for="id_duration">Duration</label> {{ form.duration }}m
   <label for="id_tag">Tag:</label> %{{ form.tag }}
   <span style="display: none;">{{ form.date }}</span>
-  <input type="submit" value="Submit">
-  <input id="start-button" type="button" value="Start">
+  <input type="submit" value="Add Todo Log">
+  <input id="start-button" type="button" value="Start Timer">
 </form>
 
 
-<h3>
+<h2>
 Stats:
-</h3>
+</h2>
+{% if streak >= 2 %}
+<h4>Streak: {{streak}} days!</h4>
+{% elif streak == 1 %}
+<h4>Streak: 1 day</h4>
+{% else %}
+<h4>Streak: 0 days :(</h4>
+{% endif %}
 <div>
     <span style="font-weight:bold;">{{percent_tasks}}% of tasks complete.</span>
 </div>
@@ -108,7 +109,7 @@ Stats:
 	    $("#start-button").unbind("click", bindToStart);
 	    $("#start-button").on("click", bindToStop);
 	    
-	    $("#start-button").val("Stop");
+	    $("#start-button").val("Stop Timer");
 	    
 	    globalTimer = Date.now();
 	    const curTimer = Date.now();
@@ -129,7 +130,7 @@ Stats:
 	    intFunc = null;
 	    $("#start-button").unbind("click", bindToStop);
 	    $("#start-button").on("click", bindToStart);
-	    $("#start-button").val("Start");
+	    $("#start-button").val("Start Timer");
 	    
 	}
 	$("#start-button").on("click", bindToStart);
