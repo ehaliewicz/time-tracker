@@ -282,9 +282,9 @@ def calculate_stats(date):
         'streak': streak,
         'tags': [
             ("This day's tags", list(todays_tags)), 
-            ('Last 7 day\s tags', list(week_tags)), 
-            ('Last 30 day\s tags', list(month_tags)), 
-            ('All tags', list(all_tags))],
+            ("Last 7 day's tags", list(week_tags)), 
+            ("Last 30 day's tags", list(month_tags)), 
+            ("All tags", list(all_tags))],
     }
 
 
