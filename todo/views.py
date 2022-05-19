@@ -211,7 +211,7 @@ def get_stats_for_filters(tags, **filter_kwargs):
             cnt,tme = processed_tags_d[tag]
             cnt += t['count']
             tme += t['time']
-            processed_tags_d[tag] = cnt,time
+            processed_tags_d[tag] = cnt,tme
 
         
         processed_tags = [(tag,cnt,get_hr_min(time)) for (tag,(cnt,time)) in processed_tags_d.items()]
@@ -288,7 +288,7 @@ def inner_date_todo_logs(request, date, title):
             new_todo_logs.append(log)
 
         todo_logs_for_today = new_todo_logs
-        calced_stats = calced_stats(date)
+        calced_stats = calculate_stats(date)
     else:
         todo_logs_for_today = TodoLog.objects.filter(date=date).order_by('unique_id')
 
