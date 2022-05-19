@@ -231,6 +231,7 @@ def get_stats_for_filters(tags, get_num_tasks, **filter_kwargs):
 def calculate_stats(date):
     
     start_of_week = date-datetime.timedelta(days=7)
+    start_of_month = date-datetime.timedelta(days=30)
     
     time_for_today, num_tasks_for_today, _ = get_stats_for_filters(
         tags=False, get_num_tasks=True, date=date
@@ -242,7 +243,7 @@ def calculate_stats(date):
         tags=True, get_num_tasks=False, date__gte=start_of_week, date__lte=date, completion=True
     )
     completed_time_for_month, _, month_tags = get_stats_for_filters(
-        tags=True, get_num_tasks=False, date__gte=start_of_week, date__lte=date, completion=True
+        tags=True, get_num_tasks=False, date__gte=start_of_month, date__lte=date, completion=True
     )
     completed_all_time, _, all_tags = get_stats_for_filters(
         tags=True, get_num_tasks=False, completion=True
