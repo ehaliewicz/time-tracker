@@ -72,8 +72,9 @@ Stats:
     <span style="font-weight:bold;">Total time:</span> {{total_time.0}}hr{{total_time.1}}m
 </div>
 
-
+<div class="row">
   {% for tagset in tags %}
+  <div class="col-md-6">
   <h3>
     {{tagset.0}}:
   </h3>
@@ -81,9 +82,9 @@ Stats:
         {% for tag in tagset.1 %}
             <li>{{tag.1}} {{tag.0}}(s), {{tag.2.0}}hr{{tag.2.1}}m </li>
         {% endfor %}
-      </ul>
+      </ul></div>
   {% endfor %}
-
+</div>
 </div>
 
   <script type="text/javascript">
