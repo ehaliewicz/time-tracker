@@ -323,7 +323,25 @@ def update_stats(date):
         db_stats.stats = c_stats
 
     db_stats.save()
+
+    # invalid later stats
+    later_stats = Stats.objects.filter(date__gt=date)
+    for stats in later_stats:
+        stats.delete()
         
+    return c_stats
+
+def init_stats(date):
+    # initializes states on first load, doesn't need to invalidate later stats
+    c_stats = calculate_stats(date)
+
+    db_stats = Stats.objects.filter(date=date).first()
+    if db_stats is None:
+        db_stats = Stats(date=date, stats=c_stats)
+    else:
+        db_stats.stats = c_stats
+
+    db_stats.save()
     return c_stats
 
 
@@ -356,8 +374,9 @@ def inner_date_todo_logs(request, date, title):
 
     
     queried_stats = Stats.objects.filter(date=date).first()
+
     if queried_stats is None:
-        calced_stats = update_stats(date)
+        calced_stats = init_stats(date)
     else:
         calced_stats = queried_stats.stats
 
