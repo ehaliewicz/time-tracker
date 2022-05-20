@@ -263,9 +263,12 @@ def calculate_stats(date):
         pct_time = round((completed_time_for_today*100)/time_for_today, 2)
 
 
-    dates = TodoLog.objects.filter(completion=True).values('date').annotate(count=models.Count('date'))
-    completed_dates = set((d.year, d.month, d.day) for d in (r['date'] for r in dates))
+    dates = (TodoLog.objects.filter(completion=True)
+             .values('date')
+             .annotate(count=models.Count('date'))
+             .values('date'))
 
+    completed_dates = set((d.year, d.month, d.day) for d in (r['date'] for r in dates))
 
     def has_date(d):
         return (d.year,d.month,d.day) in completed_dates
