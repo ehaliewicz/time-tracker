@@ -44,3 +44,8 @@ class ActiveTimer(models.Model):
     started = models.DateTimeField(auto_now_add=True, null=False)
     linked_todo_log = models.OneToOneField(TodoLog, on_delete=models.PROTECT)
     paused = models.DateTimeField(null=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['linked_todo_log']),
+        ]

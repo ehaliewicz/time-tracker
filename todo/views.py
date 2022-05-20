@@ -329,19 +329,27 @@ def inner_date_todo_logs(request, date, title):
 
         todo_logs_for_today = new_todo_logs
         calced_stats = calculate_stats(date)
+        timer_lut = {}
+        timers = []
     else:
         todo_logs_for_today = TodoLog.objects.filter(date=date).order_by('unique_id')
         timers = ActiveTimer.objects.filter(linked_todo_log__in=todo_logs_for_today).distinct()
         timer_lut = {timer.linked_todo_log_id:timer for timer in timers}
-                
+    
     new_log = TodoLog(date=date)
     form = TodoLogForm(instance=new_log)
 
+    
     todo_logs_and_timers = [(TodoLogForm(instance=todo_log), timer_lut.get(todo_log.unique_id)) for todo_log in todo_logs_for_today]
 
-    active_timer = ActiveTimer.objects.first()
     
     
+    # TODO: we will only allow one active timer in the future
+    if len(timers) == 0:
+        active_timer = None
+    else:
+        active_timer = timers[0]
+        
     return render(request, "day_todo_list.html", {
         "title": "Todo List For {}".format(title),
         "todo_logs_and_timers": todo_logs_and_timers,
