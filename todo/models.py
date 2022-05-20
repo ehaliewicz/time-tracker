@@ -9,7 +9,14 @@ class TodoItem(models.Model):
     duration = models.IntegerField()
     tag = models.CharField(max_length=128, null=False, blank=True, default="")
 
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=False)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['user_id'])
+        ]
+
+    
 class TodoLog(models.Model):
     unique_id = models.AutoField(primary_key=True)
     completion = models.BooleanField(default=False)
@@ -17,41 +24,40 @@ class TodoLog(models.Model):
     duration = models.IntegerField()
     tag = models.CharField(max_length=128, null=False, blank=True, default="")
     date = models.DateField()
-    #user = models.ForeignKey(User, null=False, on_delete=models.PROTECT)
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=False)
     
     class Meta:
         indexes = [
             # query all logs for today
             # query all completed logs for this week
             # query all completed logs for all time
-            models.Index(fields=['date', 'completion']),
-            models.Index(fields=['completion']),
-            models.Index(fields=['tag']),
-            models.Index(fields=['date', 'duration', 'unique_id'])
+            models.Index(fields=['user_id','date', 'completion']),
+            models.Index(fields=['user_id','completion']),
+            models.Index(fields=['user_id','tag']),
+            models.Index(fields=['user_id','date', 'duration', 'unique_id'])
+            
         ]
-    
-class TodoItemForm(ModelForm):
-    class Meta:
-        model = TodoItem
-        fields = ('description', 'duration', 'tag')
 
-class TodoLogForm(ModelForm):
-    class Meta:
-        model = TodoLog
-        fields = ('completion','description', 'duration', 'tag', 'date')
-
-
+        
 class ActiveTimer(models.Model):
     started = models.DateTimeField(auto_now_add=True, null=False)
     linked_todo_log = models.OneToOneField(TodoLog, on_delete=models.PROTECT)
     paused = models.DateTimeField(null=True)
 
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=False)
+
     class Meta:
         indexes = [
-            models.Index(fields=['linked_todo_log']),
+            models.Index(fields=['user_id','linked_todo_log']),
         ]
 
 class Stats(models.Model):
     date = models.DateField(null=False, primary_key=True)
     stats = models.JSONField(null=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=False)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['user_id', 'date']),
+        ]

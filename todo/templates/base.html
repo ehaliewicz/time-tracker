@@ -48,25 +48,26 @@
 <body style="background-color: #eeeeee;">
 <nav class="navbar navbar-default navbar-static-top navbar-inverse">
   <div class="container">
+    
     <ul class="nav navbar-nav">
       {% if request.path == "/today/" %}
       <li class="active">
-        <a href="/today"><span class="glyphicon glyphicon-home"></span> Today</a>
+        <a href="/today"><span class="glyphicon glyphicon-list"></span> Today</a>
       </li>
       {% else %}
       <li class="">
-        <a href="/today"><span class="glyphicon glyphicon-home"></span> Today</a>
+        <a href="/today"><span class="glyphicon glyphicon-list"></span> Today</a>
       </li>
       {% endif %}
 
       
       {% if request.path == "/todo_list/" %}
       <li class="active">
-        <a href="/todo_list"><span class="glyphicon glyphicon-home"></span> Todo List</a>
+        <a href="/todo_list"><span class="glyphicon glyphicon-list-alt"></span> Todo List</a>
       </li>
       {% else %}
       <li>
-        <a href="/todo_list"><span class="glyphicon glyphicon-home"></span> Todo List</a>
+        <a href="/todo_list"><span class="glyphicon glyphicon-list-alt"></span> Todo List</a>
       </li>
       {% endif %}
       
@@ -75,11 +76,14 @@
         <a href="/import_log_file"><span class="glyphicon glyphicon-home"></span> Import Log File</a>
       </li>
       {% else %}
-      <li>
-        <a href="/import_log_file"><span class="glyphicon glyphicon-home"></span> Import Log File</a>
-      </li>
       {% endif %}
+      
+      <li>
+        <a href="/accounts/logout"><span class="glyphicon glyphicon-home"></span> Logout</a>
+      </li>
+      
     </ul>
+    
   </div>
 </nav>
 
