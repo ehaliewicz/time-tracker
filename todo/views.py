@@ -288,6 +288,7 @@ def calculate_stats(date):
     
     
     return {
+        'total_today_tasks': todays_stats['count'],
         'percent_tasks': pct_tasks,
         'percent_time': pct_time,
         'completed_time': get_hr_min(completed_todays_stats['time']),
@@ -295,7 +296,7 @@ def calculate_stats(date):
         'avg_week_time': get_hr_min(week_stats['avg']),
         'completed_month_time': get_hr_min(month_stats['time']),
         'avg_month_time': get_hr_min(month_stats['avg']),
-        'total_tasks': all_stats['count'],
+        
         'total_time': get_hr_min(all_stats['time']),
         'avg_total_time': get_hr_min(all_stats['time']/date_interval.days), 
         'streak': streak,
@@ -315,8 +316,8 @@ def get_hr_min(m):
 
 def inner_date_todo_logs(request, date, title):
     calced_stats = calculate_stats(date)
-    
-    if calced_stats['total_tasks'] == 0:
+    logging.critical(calced_stats)
+    if calced_stats['total_today_tasks'] == 0:
         # create a list of TodoLogs from TodoItems
         all_todo_items = todo_list_or_defaults() #TodoItem.objects.all()
 

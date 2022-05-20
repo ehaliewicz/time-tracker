@@ -1,5 +1,6 @@
 from django.db import models
 from django.forms import ModelForm
+from django.contrib.auth.models import User 
 
 class TodoItem(models.Model):
     unique_id = models.AutoField(primary_key=True)
@@ -15,7 +16,8 @@ class TodoLog(models.Model):
     duration = models.IntegerField()
     tag = models.CharField(max_length=128, null=False, blank=True, default="")
     date = models.DateField()
-
+    #user = models.ForeignKey(User, null=False, on_delete=models.PROTECT)
+    
     class Meta:
         indexes = [
             # query all logs for today
@@ -35,6 +37,6 @@ class TodoItemForm(ModelForm):
 class TodoLogForm(ModelForm):
     class Meta:
         model = TodoLog
-        fields = '__all__'
+        fields = ('completion','description', 'duration', 'tag', 'date')
 
     
