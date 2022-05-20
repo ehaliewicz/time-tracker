@@ -5,10 +5,53 @@
   <div class="container">
 
 
-<h2>{{title}}</h2>
+    <h2>{{title}}</h2>
+    
+    {% if active_timer is not None %}
+    <div class="row" style="margin-bottom: 20px; margin-top: 20px;">
+      <div class="col-md-4">
+	<h4 style="margin-bottom: 0px; margin-top: 3px;">
+	  Current Timer - {{active_timer.linked_todo_log.description}}
+	  - <span id="current_time"></span>
+	</h4>
+      </div>
+      
+      <div id="timer_start_ts" style="display: none;">{{active_timer.started|date:"c"}}</div>
+
+      {% if active_timer.paused is not None %}
+      <div id="timer_pause_ts" style="display: none;">{{active_timer.paused|date:"c"}}</div>
+
+      <div class="col-md-1">
+	<form action="/resume_timer/{{active_timer.linked_todo_log.unique_id}}">
+	  {% csrf_token %}
+	  <input type="submit" value="Resume">
+	</form>
+      </div>
+      
+      {% else %}
+
+      <div class="col-md-1">
+	<form action="/pause_timer/{{active_timer.linked_todo_log.unique_id}}">
+	  {% csrf_token %}
+	  <input type="submit" value="Pause">
+	</form>
+      </div>
+
+      {% endif %}
+      <div class="col-md-1">
+	<form action="/stop_timer/{{active_timer.linked_todo_log.unique_id}}">
+	  {% csrf_token %}
+	  <input type="submit" value="Stop">
+	</form>
+      </div>
+      
+    </div>
+    
+    {% endif %}
+        
 
 
-{% for todo in todo_logs %}
+{% for todo,timer in todo_logs_and_timers %}
     <div class="row form-group" style="margin-bottom: 5px;">
       <form action="/update_todo_log/{{todo.instance.unique_id}}" method="post" style="display: inline;">
         {% csrf_token %}
@@ -22,6 +65,14 @@
         {% csrf_token %}
         <input type="submit" value="Delete">
       </form>
+      
+      {% if timer is None %}
+      <form action="/start_timer/{{todo.instance.unique_id}}" method="POST" style="display: inline;">
+	{% csrf_token %}
+	<input type="submit" value="Start Timer">
+      </form>
+      {% endif %}
+      
     </div>
 {% endfor %}
 
@@ -36,7 +87,6 @@
   <label for="id_tag">Tag:</label> %{{ form.tag }}
   <span style="display: none;">{{ form.date }}</span>
   <input type="submit" value="Add Todo Log">
-  <input id="start-button" type="button" value="Start Timer">
 </form>
 
 
@@ -82,58 +132,63 @@ Stats:
       </ul></div>
   {% endfor %}
 </div>
-</div>
+  </div>
 
+  {% if active_timer is not None %}
   <script type="text/javascript">
+
     
     (function() {
-	var globalTimer;
 
-	var time = function(x) {
-	    const mins = Math.round(x/60);
-	    
-	    let seconds = Math.round(x%60);
+	const get_hr_min = function(seconds) {
 
-	    return (mins + (seconds/100)).toFixed(2);
+	    // say seconds is 365
+
+	    // mins = 60
 	    
+	    const mins = seconds/60;
+	    const rem_secs = seconds%60
+	    
+	    const hours = mins/60;
+	    const rem_mins = mins%60;
+
+	    return [Math.trunc(hours),Math.trunc(rem_mins),Math.trunc(rem_secs)];
 	}
 	
-	var intFunc;
-	const ref = $("input[type=number]").last();
-	console.log("ref", ref);
-	
-	var bindToStart = function() {
+	let start_ts = new Date($("#timer_start_ts").text());
 
-	    $("#start-button").unbind("click", bindToStart);
-	    $("#start-button").on("click", bindToStop);
+	const updateTimer = function(ms) {
 	    
-	    $("#start-button").val("Stop Timer");
-	    
-	    globalTimer = Date.now();
-	    const curTimer = Date.now();
-	    const t = (curTimer - globalTimer)/1000;
-	    ref.val(time(t));
-
-
-	    intFunc = setInterval(function() {
-		const curTimer = Date.now();
-		const t = (curTimer - globalTimer)/1000;
-		ref.val(time(t));
-	    }, 500);
-	}
-
-	var bindToStop = function() {
-	    
-	    clearInterval(intFunc);
-	    intFunc = null;
-	    $("#start-button").unbind("click", bindToStop);
-	    $("#start-button").on("click", bindToStart);
-	    $("#start-button").val("Start Timer");
+	    const [hr,min,sec] = get_hr_min(ms/1000);
+	    $("#current_time").text(
+		(hr.toString().padStart(2, '0') + ':' + 
+		 min.toString().padStart(2, '0') + ':' + 
+		 sec.toString().padStart(2, '0'))	     
+	    );
 	    
 	}
-	$("#start-button").on("click", bindToStart);
 
+	const is_paused = $("#timer_pause_ts").length === 1;
+
+	if(is_paused) {
+	    const pause_ts = new Date($("#timer_pause_ts").text());
+	    const ms = pause_ts - start_ts;
+
+	    updateTimer(ms);
+	    
+	} else {
+
+	    const int_func = function() {
+		const now_ts = Date.now();
+		const dt = now_ts - start_ts;
+		updateTimer(dt);
+	    }
+
+	    int_func();
+	    setInterval(int_func, 1000);
+	}
     })();
   </script>
-  
+  {% endif %}
+
 {% endblock %}

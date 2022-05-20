@@ -39,4 +39,8 @@ class TodoLogForm(ModelForm):
         model = TodoLog
         fields = ('completion','description', 'duration', 'tag', 'date')
 
-    
+
+class ActiveTimer(models.Model):
+    started = models.DateTimeField(auto_now_add=True, null=False)
+    linked_todo_log = models.OneToOneField(TodoLog, on_delete=models.PROTECT)
+    paused = models.DateTimeField(null=True)

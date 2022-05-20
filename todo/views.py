@@ -6,7 +6,7 @@ from django import forms
 import dateutil.parser
 import logging
 from django.db import models,connection
-from .models import TodoItem, TodoLog, TodoItemForm, TodoLogForm
+from .models import TodoItem, TodoLog, TodoItemForm, TodoLogForm, ActiveTimer
 import datetime
 import collections
 
@@ -316,7 +316,7 @@ def get_hr_min(m):
 
 def inner_date_todo_logs(request, date, title):
     calced_stats = calculate_stats(date)
-    logging.critical(calced_stats)
+    
     if calced_stats['total_today_tasks'] == 0:
         # create a list of TodoLogs from TodoItems
         all_todo_items = todo_list_or_defaults() #TodoItem.objects.all()
@@ -331,14 +331,21 @@ def inner_date_todo_logs(request, date, title):
         calced_stats = calculate_stats(date)
     else:
         todo_logs_for_today = TodoLog.objects.filter(date=date).order_by('unique_id')
-
+        timers = ActiveTimer.objects.filter(linked_todo_log__in=todo_logs_for_today).distinct()
+        timer_lut = {timer.linked_todo_log_id:timer for timer in timers}
+                
     new_log = TodoLog(date=date)
     form = TodoLogForm(instance=new_log)
 
+    todo_logs_and_timers = [(TodoLogForm(instance=todo_log), timer_lut.get(todo_log.unique_id)) for todo_log in todo_logs_for_today]
+
+    active_timer = ActiveTimer.objects.first()
+    
     
     return render(request, "day_todo_list.html", {
         "title": "Todo List For {}".format(title),
-        "todo_logs": [TodoLogForm(instance=todo_log) for todo_log in todo_logs_for_today],
+        "todo_logs_and_timers": todo_logs_and_timers,
+        "active_timer": active_timer, 
         "form": form,
         **calced_stats
     })
@@ -407,3 +414,53 @@ def list_todo_logs_for_tag(request, tag):
                 "tag": tag,
                 "todo_logs": [TodoLogForm(instance=log) for log in q]
             })
+
+
+def start_timer(request, log_id):
+    ActiveTimer(linked_todo_log_id=log_id).save()
+    return redirect("/today/")
+
+
+def pause_timer(request, log_id):
+    t = ActiveTimer.objects.filter(linked_todo_log_id=log_id).get()
+    t.paused = datetime.datetime.now()
+    t.save()
+    return redirect("/today/")
+
+
+def resume_timer(request, log_id):
+    t = ActiveTimer.objects.filter(linked_todo_log_id=log_id).get()
+
+    paused_d = t.paused
+    now_d = datetime.datetime.now(datetime.timezone.utc)
+    
+    
+    paused_dt = now_d - paused_d # amount of time paused
+
+    t.paused = None
+    t.started += paused_dt # move start time forward by how long it was paused
+
+    t.save()
+    return redirect("/today/")
+
+
+def stop_timer(request, log_id):
+    t = ActiveTimer.objects.filter(linked_todo_log_id=log_id).get()
+
+    start_d = t.started
+
+    if t.paused is not None:
+        end_d = t.paused
+    else:
+        end_d = datetime.datetime.now(datetime.timezone.utc) 
+
+    duration = round((end_d - start_d).total_seconds()/60)
+
+    log = TodoLog.objects.filter(unique_id=log_id).get()
+
+    log.duration = duration
+    t.delete()
+    log.save()
+    
+    return redirect("/today/")
+    
