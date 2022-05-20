@@ -6,7 +6,7 @@ from django import forms
 import dateutil.parser
 import logging
 from django.db import models,connection
-from .models import TodoItem, TodoLog, TodoItemForm, TodoLogForm, ActiveTimer
+from .models import TodoItem, TodoLog, TodoItemForm, TodoLogForm, ActiveTimer, Stats
 import datetime
 import collections
 
@@ -136,7 +136,8 @@ def update_todo_log(request, log_id):
         form.instance.save()
     else:
         raise Exception("Error(s) updating todo log {}".format(form.errors))
-    
+
+    update_stats(form.instance.date)
     
     return redirect(request.META.get('HTTP_REFERER'))
 
@@ -158,6 +159,8 @@ def new_todo_log(request):
     else:
         raise Exception("Error(s) creating todo log {}".format(form.errors))
     
+
+    update_stats(form.instance.date)
     
     return redirect(request.META.get('HTTP_REFERER'))
 
@@ -177,6 +180,8 @@ def delete_todo_log(request, log_id):
     todo_log = TodoLog.objects.get(unique_id=log_id)
     todo_log.delete()
 
+    update_stats(todo_log.date)
+    
     return redirect(request.META.get('HTTP_REFERER'))
 
 
@@ -226,6 +231,7 @@ def get_stats_for_filters(tags, **filter_kwargs):
         
     return stats
 
+    
 
 def calculate_stats(date):
     
@@ -307,6 +313,19 @@ def calculate_stats(date):
             ("All tags", list(all_stats['tags']))],
     }
 
+def update_stats(date):
+    c_stats = calculate_stats(date)
+
+    db_stats = Stats.objects.filter(date=date).first()
+    if db_stats is None:
+        db_stats = Stats(date=date, stats=c_stats)
+    else:
+        db_stats.stats = c_stats
+
+    db_stats.save()
+        
+    return c_stats
+
 
 def get_hr_min(m):
     im = int(m)
@@ -315,9 +334,10 @@ def get_hr_min(m):
 
 
 def inner_date_todo_logs(request, date, title):
-    calced_stats = calculate_stats(date)
-    
-    if calced_stats['total_today_tasks'] == 0:
+    #calced_stats = calculate_stats(date)
+
+    todo_logs_for_today = TodoLog.objects.filter(date=date).order_by('unique_id')
+    if len(todo_logs_for_today) == 0:
         # create a list of TodoLogs from TodoItems
         all_todo_items = todo_list_or_defaults() #TodoItem.objects.all()
 
@@ -328,13 +348,19 @@ def inner_date_todo_logs(request, date, title):
             new_todo_logs.append(log)
 
         todo_logs_for_today = new_todo_logs
-        calced_stats = calculate_stats(date)
         timer_lut = {}
         timers = []
     else:
-        todo_logs_for_today = TodoLog.objects.filter(date=date).order_by('unique_id')
         timers = ActiveTimer.objects.filter(linked_todo_log__in=todo_logs_for_today).distinct()
         timer_lut = {timer.linked_todo_log_id:timer for timer in timers}
+
+    
+    queried_stats = Stats.objects.filter(date=date).first()
+    if queried_stats is None:
+        calced_stats = update_stats(date)
+    else:
+        calced_stats = queried_stats.stats
+
     
     new_log = TodoLog(date=date)
     form = TodoLogForm(instance=new_log)
@@ -470,6 +496,9 @@ def stop_timer(request, log_id):
     log.completion = True
     t.delete()
     log.save()
-    
+
+
+    update_stats(t.datetime.date())
+        
     return redirect("/today/")
     

@@ -1,6 +1,7 @@
 from django.db import models
 from django.forms import ModelForm
-from django.contrib.auth.models import User 
+from django.contrib.auth.models import User
+from django.contrib.postgres.fields import JSONField
 
 class TodoItem(models.Model):
     unique_id = models.AutoField(primary_key=True)
@@ -49,3 +50,8 @@ class ActiveTimer(models.Model):
         indexes = [
             models.Index(fields=['linked_todo_log']),
         ]
+
+class Stats(models.Model):
+    date = models.DateField(null=False, primary_key=True)
+    stats = models.JSONField(null=False)
+
