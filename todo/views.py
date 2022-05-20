@@ -467,6 +467,7 @@ def stop_timer(request, log_id):
     log = TodoLog.objects.filter(unique_id=log_id).get()
 
     log.duration = duration
+    log.completion = True
     t.delete()
     log.save()
     
