@@ -59,5 +59,5 @@ class Stats(models.Model):
 
     class Meta:
         indexes = [
-            models.Index(fields=['user_id', 'date']),
+            models.Index(fields=['date', 'user_id' ]),
         ]
