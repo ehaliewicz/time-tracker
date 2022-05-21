@@ -339,7 +339,7 @@ def stop_timer(request, log_id):
     log.save()
 
 
-    update_stats(request.user.id, t.date.date())
+    update_stats(request.user.id, t.started.date())
     return redirect(request.META.get('HTTP_REFERER'))
     
 
