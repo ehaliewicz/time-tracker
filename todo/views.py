@@ -290,14 +290,16 @@ def list_todo_logs_for_tag(request, tag):
 @login_required
 def start_timer(request, log_id):
     ActiveTimer(user_id=request.user.id, linked_todo_log_id=log_id).save()
-    return redirect("/today/")
+    return redirect(request.META.get('HTTP_REFERER'))
+
 
 @login_required
 def pause_timer(request, log_id):
     t = ActiveTimer.objects.filter(user_id=request.user.id, linked_todo_log_id=log_id).get()
     t.paused = datetime.datetime.now()
     t.save()
-    return redirect("/today/")
+    return redirect(request.META.get('HTTP_REFERER'))
+
 
 @login_required
 def resume_timer(request, log_id):
@@ -313,7 +315,8 @@ def resume_timer(request, log_id):
     t.started += paused_dt # move start time forward by how long it was paused
 
     t.save()
-    return redirect("/today/")
+    return redirect(request.META.get('HTTP_REFERER'))
+    
 
 @login_required
 def stop_timer(request, log_id):
@@ -337,8 +340,7 @@ def stop_timer(request, log_id):
 
 
     update_stats(request.user.id, t.date.date())
-        
-    return redirect("/today/")
+    return redirect(request.META.get('HTTP_REFERER'))
     
 
 def register(request):
