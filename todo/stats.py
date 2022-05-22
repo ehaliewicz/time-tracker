@@ -1,7 +1,7 @@
 from .models import Stats, TodoLog
 import datetime
 from django.db import models
-
+import logging
 
 def get_hr_min(m):
     im = int(m)
@@ -112,7 +112,7 @@ def calculate_stats(user_id, date):
     first_task = TodoLog.objects.filter(user_id=user_id).order_by('date').first()
     last_task = TodoLog.objects.filter(user_id=user_id).order_by('date').last()
     if first_task and last_task and first_task.date != last_task.date:
-        date_interval = last_task.date - first_task.date 
+        date_interval = last_task.date - first_task.date
         avg_total_time = get_hr_min(all_stats['time']/date_interval.days)
         num_total_days = date_interval.days
     else:
