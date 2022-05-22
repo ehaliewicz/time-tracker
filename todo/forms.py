@@ -1,10 +1,9 @@
-from django.contrib.auth.forms import UserCreationForm
+from django import forms
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UsernameField
 from django.contrib.auth.models import User
-from django import forms
-from .models import TodoItem, TodoLog
-from django.contrib.auth.forms import AuthenticationForm, UsernameField
-from django import forms
 import logging
+
+from .models import TodoItem, TodoLog
 
 class TodoItemForm(forms.ModelForm):
     class Meta:

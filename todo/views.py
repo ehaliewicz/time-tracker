@@ -3,16 +3,22 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_protect
 from django.views import View
 from django import forms
+import collections
+import datetime
 import dateutil.parser
-import logging
+from django.contrib.auth.decorators import login_required
 from django.db import models,connection
+import logging
+
 from .models import TodoItem, TodoLog, ActiveTimer
 from .forms import TodoItemForm, TodoLogForm, RegisterForm
-import datetime
-import collections
-from django.contrib.auth.decorators import login_required
+
+
+
 from .stats import get_or_cache_stats, update_stats
 import pytz
+from django.views.decorators import cache
+
 
 def todoItemToLog(user_id,item, date):
     return TodoLog(
@@ -22,6 +28,7 @@ def todoItemToLog(user_id,item, date):
         tag=item.tag,
         date=date
     )
+
 
 class ImportLogsForm(forms.Form):
     log_file = forms.FileField()
@@ -36,6 +43,7 @@ def skip_char(c, line):
         raise Exception("Expected '{}' but got '{}'".format(c, line[0]))
 
     return line[1:]
+
 
 def skip_string(s, line):
     while len(s) > 0:
