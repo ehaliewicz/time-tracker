@@ -3,7 +3,6 @@ import datetime
 from django.db import models
 
 
-
 def get_hr_min(m):
     im = int(m)
     return int(im//60), im%60
@@ -52,6 +51,7 @@ def get_stats_for_filters(user_id, tags, **filter_kwargs):
         stats['tags'] = [(tag,cnt,get_hr_min(time)) for (tag,(cnt,time)) in processed_tags_d.items()]
         
     return stats
+
 
 def calculate_stats(user_id, date):
     
@@ -114,9 +114,11 @@ def calculate_stats(user_id, date):
     if first_task and last_task and first_task.date != last_task.date:
         date_interval = last_task.date - first_task.date 
         avg_total_time = get_hr_min(all_stats['time']/date_interval.days)
+        num_total_days = date_interval.days
     else:
         avg_total_time = all_stats['time']
-    
+        num_total_days = 1 if first_task or last_task else 0
+        
     return {
         'total_today_tasks': todays_stats['count'],
         'percent_tasks': pct_tasks,
@@ -129,6 +131,7 @@ def calculate_stats(user_id, date):
         
         'total_time': get_hr_min(all_stats['time']),
         'avg_total_time': avg_total_time,
+        'num_total_days': num_total_days, 
         'streak': streak,
         'tags': [
             ("This day's tags", list(completed_todays_stats['tags'])), 

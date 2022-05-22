@@ -1,6 +1,7 @@
 django
 gunicorn
+django-crispy-forms
+django-debug-toolbar
 django-heroku
 python-dateutil
-django-debug-toolbar
-django-crispy-forms
+pytz

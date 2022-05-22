@@ -12,6 +12,7 @@ import datetime
 import collections
 from django.contrib.auth.decorators import login_required
 from .stats import get_or_cache_stats, update_stats
+import pytz
 
 def todoItemToLog(user_id,item, date):
     return TodoLog(
@@ -246,8 +247,12 @@ def inner_date_todo_logs(request, date, title):
 @login_required
 @csrf_protect
 def todays_todos(request):
-    date = datetime.date.today()
     title = "Today"
+    tz_name = request.session['tz_name']
+
+    assert 'tz_name' in request.session
+    
+    date = datetime.datetime.now(pytz.timezone(tz_name))
     return inner_date_todo_logs(request, date, title)
 
 
@@ -338,7 +343,6 @@ def stop_timer(request, log_id):
     t.delete()
     log.save()
 
-
     update_stats(request.user.id, t.started.date())
     return redirect(request.META.get('HTTP_REFERER'))
     
@@ -355,3 +359,16 @@ def register(request):
         form = RegisterForm()
 
     return render(request, "registration/register.html", {"form": form})
+
+
+"""
+def login(request):
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+        else:
+            return 
+"""

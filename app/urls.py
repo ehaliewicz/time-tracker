@@ -1,15 +1,15 @@
 from django.urls import path, include
-
 from django.contrib import admin
-
 from django.views.generic.base import RedirectView
 from django.contrib.staticfiles.storage import staticfiles_storage
-
 from . import settings
 from django.conf.urls.static import static
+from django.contrib.auth import views
+from todo.forms import UserLoginForm
 
 
 admin.autodiscover()
+
 
 import todo.views
 
@@ -54,8 +54,18 @@ urlpatterns = [
 
     path("admin/", admin.site.urls, name="admin page"),
     path("register/", todo.views.register, name="create new user"),
+
     
     path('accounts/profile/', RedirectView.as_view(url='/today')), #staticfiles_storage.url('img/favicon.ico'))),
+    
+        
+    path('accounts/login/',
+     views.LoginView.as_view(
+         authentication_form=UserLoginForm
+     ),
+         name="login user"
+    ),
+
     path('accounts/', include("django.contrib.auth.urls")), # <-- added
     
 ]

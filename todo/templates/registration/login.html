@@ -11,5 +11,17 @@
     <p>Don't have an accoount? Create one <a href="/register">here</a></p>
     <button type="submit" class="btn btn-success">Login</button>	
   </form>
+  <script type="text/javascript">
+    (function() {
+	var div = document.getElementById("div_id_timezone_name");
+	var el = document.getElementById("timezone-input");
+	
+	if(el) {
+	    el.value = Intl.DateTimeFormat().resolvedOptions().timeZone; 
+	    div.hidden = true;
+	}
+	
+    })();
+  </script>
 </div>
 {% endblock %}
