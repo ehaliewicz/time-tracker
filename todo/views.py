@@ -208,7 +208,7 @@ def delete_todo_item(request, item_id):
 
 
 def inner_date_todo_logs(request, date, title):
-
+    
     todo_logs_for_today = TodoLog.objects.filter(user_id=request.user.id,date=date).order_by('unique_id')
     if len(todo_logs_for_today) == 0:
         # create a list of TodoLogs from TodoItems
@@ -255,12 +255,13 @@ def inner_date_todo_logs(request, date, title):
 @login_required
 @csrf_protect
 def todays_todos(request):
-    title = "Today"
-    tz_name = request.session['tz_name']
-
-    assert 'tz_name' in request.session
     
+    
+
+    tz_name = request.session['tz_name']
     date = datetime.datetime.now(pytz.timezone(tz_name))
+    title = "{}/{}/{}".format(date.year, date.month, date.day) 
+    
     return inner_date_todo_logs(request, date, title)
 
 
