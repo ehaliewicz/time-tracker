@@ -28,7 +28,7 @@ SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
 SESSION_COOKIE_HTTPONLY = True
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', False)
+DEBUG = False #os.getenv('DEBUG', False)
 
 ALLOWED_HOSTS = []
 
@@ -44,7 +44,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "crispy_forms",
     "debug_toolbar",
-    "todo",    
+    "django_jinja",
+    "todo",
 ]
 
 MIDDLEWARE = [
@@ -63,6 +64,19 @@ ROOT_URLCONF = "app.urls"
 
 TEMPLATES = [
     {
+        "BACKEND": "django_jinja.backend.Jinja2",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "match_extension": ".jinja",
+            "bytecode_cache": {
+                "name": "default",
+                "backend": "django_jinja.cache.BytecodeCache",
+                "enabled": True,
+            },
+        }
+    },
+    {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [],
         "OPTIONS": {
@@ -79,8 +93,10 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
             ]
         },
-    }
+    },
 ]
+
+
 
 WSGI_APPLICATION = "app.wsgi.application"
 

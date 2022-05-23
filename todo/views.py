@@ -207,7 +207,7 @@ def delete_todo_item(request, item_id):
 
 
 
-def inner_date_todo_logs(request, date, title):
+def inner_date_todo_logs(request, date, title, templ):
     
     todo_logs_for_today = TodoLog.objects.filter(user_id=request.user.id,date=date).order_by('unique_id')
     if len(todo_logs_for_today) == 0:
@@ -243,7 +243,7 @@ def inner_date_todo_logs(request, date, title):
     else:
         active_timer = timers[0]
         
-    return render(request, "day_todo_list.html", {
+    return render(request, templ, { #"day_todo_list.html", {
         "title": "Todo List For {}".format(title),
         "todo_logs_and_timers": todo_logs_and_timers,
         "active_timer": active_timer, 
@@ -255,14 +255,20 @@ def inner_date_todo_logs(request, date, title):
 @login_required
 @csrf_protect
 def todays_todos(request):
-    
-    
-
     tz_name = request.session['tz_name']
     date = datetime.datetime.now(pytz.timezone(tz_name))
     title = "{}/{}/{}".format(date.year, date.month, date.day) 
     
-    return inner_date_todo_logs(request, date, title)
+    return inner_date_todo_logs(request, date, title, "day_todo_list.html")
+
+@login_required
+@csrf_protect
+def todays_todos_jinja(request):
+    tz_name = request.session['tz_name']
+    date = datetime.datetime.now(pytz.timezone(tz_name))
+    title = "{}/{}/{}".format(date.year, date.month, date.day) 
+    
+    return inner_date_todo_logs(request, date, title, "day_todo_list.jinja")
 
 
 @login_required
@@ -270,7 +276,7 @@ def todays_todos(request):
 def date_todos(request, date):
     date = dateutil.parser.parse(date)
     title = "{}/{}/{}".format(date.year, date.month, date.day)
-    return inner_date_todo_logs(request, date, title)
+    return inner_date_todo_logs(request, date, title, "day_todo_list.html")
 
 
 @login_required
@@ -310,7 +316,7 @@ def start_timer(request, log_id):
 @login_required
 def pause_timer(request, log_id):
     t = ActiveTimer.objects.filter(user_id=request.user.id, linked_todo_log_id=log_id).get()
-    t.paused = datetime.datetime.now()
+    t.paused = datetime.datetime.now(datetime.timezone.utc)
     t.save()
     return redirect(request.META.get('HTTP_REFERER'))
 
@@ -318,8 +324,7 @@ def pause_timer(request, log_id):
 @login_required
 def resume_timer(request, log_id):
     t = ActiveTimer.objects.filter(user_id=request.user.id, linked_todo_log_id=log_id).get()
-
-    paused_d = t.paused
+    paused_d = pytz.utc.localize(t.paused)
     now_d = datetime.datetime.now(datetime.timezone.utc)
     
     
@@ -336,10 +341,10 @@ def resume_timer(request, log_id):
 def stop_timer(request, log_id):
     t = ActiveTimer.objects.filter(user_id=request.user.id, linked_todo_log_id=log_id).get()
 
-    start_d = t.started
+    start_d = pytz.utc.localize(t.started)
 
     if t.paused is not None:
-        end_d = t.paused
+        end_d = pytz.utc.localize(t.paused)
     else:
         end_d = datetime.datetime.now(datetime.timezone.utc) 
 

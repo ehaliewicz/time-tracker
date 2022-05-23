@@ -3,5 +3,6 @@ gunicorn
 django-crispy-forms
 django-debug-toolbar
 django-heroku
+django-jinja
 python-dateutil
 pytz
