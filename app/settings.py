@@ -30,8 +30,21 @@ SESSION_COOKIE_HTTPONLY = True
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False #os.getenv('DEBUG', False)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "http://localhost:5001"
+]
 
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5001"
+]
+
+
+CORS_ALLOWED_ORIGINS = [
+    "http://time-tracker-622.herokuapp.com",
+    "http://localhost:5001"
+]
+#CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = True
 
 # Application definition
 
@@ -45,6 +58,7 @@ INSTALLED_APPS = [
     "crispy_forms",
     "debug_toolbar",
     "django_jinja",
+    "corsheaders",
     "todo",
 ]
 
@@ -53,6 +67,7 @@ MIDDLEWARE = [
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",

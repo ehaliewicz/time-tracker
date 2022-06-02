@@ -1,0 +1,11 @@
+
+{% csrf_token %}
+{{todo.completion}}
+<span style="font-weight:bold;">{{todo.description}}</span> - {{todo.duration}}m
+
+%{{todo.tag}}
+
+<span style="display: none;">{{todo.date}}</span>
+
+<input type="submit" value="Update">
+

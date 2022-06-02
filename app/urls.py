@@ -6,12 +6,12 @@ from . import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views
 from todo.forms import UserLoginForm
-
+import todo.views
 
 admin.autodiscover()
 
 
-import todo.views
+
 
 # To add a new path, first import the app:
 # import blog
@@ -33,8 +33,7 @@ urlpatterns = [
     path("day/<str:date>", todo.views.date_todos, name="date todos"),
     path("day/<str:date>/", todo.views.date_todos, name="date todos"),
     path("today/", todo.views.todays_todos, name="todays todos"),
-    path("today_jinja/", todo.views.todays_todos_jinja, name="todays todos jinja ver."),
-    
+        
     path("todo_list/", todo.views.todo_list, name="todo list"),
     path("", todo.views.redirect_to_today, name=""),
 
@@ -57,16 +56,32 @@ urlpatterns = [
     path("register/", todo.views.register, name="create new user"),
 
     
-    path('accounts/profile/', RedirectView.as_view(url='/today')), #staticfiles_storage.url('img/favicon.ico'))),
+    path("accounts/profile/", RedirectView.as_view(url='/today')), #staticfiles_storage.url('img/favicon.ico'))),
     
         
-    path('accounts/login/',
+    path("accounts/login/",
      views.LoginView.as_view(
          authentication_form=UserLoginForm
      ),
          name="login user"
     ),
 
-    path('accounts/', include("django.contrib.auth.urls")), # <-- added
+    path("accounts/", include("django.contrib.auth.urls")), # <-- added
+
+    
+
+    path("get_todo_log/<int:log_id>/pt", todo.views.get_todo_log_partial, name="get todo log partial"),
+    path("update_todo_log/<int:log_id>/pt", todo.views.update_todo_log_partial, name="update todo log partial"),
+    path("delete_todo_log/<int:log_id>/pt", todo.views.delete_todo_log_partial, name="delete todo log partial"),
+    path("new_todo_log/pt", todo.views.new_todo_log_partial, name="new todo log partial"),
+    
+    path("stats_for_day/<str:date>/pt", todo.views.stats_for_day_partial, name="stats partial"),
+    path("todo_logs_for_day/<str:date>/pt", todo.views.todo_logs_for_day_partial, name="logs for day partial"),
+    
+    path("get_timer/pt", todo.views.get_timer_partial, name="get timer partial"),
+    path("start_timer/<int:log_id>/pt", todo.views.start_timer_partial, name="start timer for log partial"),
+    path("pause_timer/<int:log_id>/pt", todo.views.pause_timer_partial, name="pause timer for log partial"),
+    path("resume_timer/<int:log_id>/pt", todo.views.resume_timer_partial, name="resume timer for log partial"),
+    path("stop_timer/<int:log_id>/pt", todo.views.stop_timer_partial, name="stop timer for log partial"),
     
 ]

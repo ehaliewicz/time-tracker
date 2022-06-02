@@ -1,5 +1,6 @@
 django
 gunicorn
+django-cors-headers
 django-crispy-forms
 django-debug-toolbar
 django-heroku

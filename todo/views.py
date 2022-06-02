@@ -1,6 +1,6 @@
 from django.shortcuts import redirect, render
 from django.http import HttpResponse
-from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.csrf import csrf_protect, csrf_exempt, ensure_csrf_cookie
 from django.views import View
 from django import forms
 import collections
@@ -10,9 +10,10 @@ from django.contrib.auth.decorators import login_required
 from django.db import models,connection
 import logging
 
+
 from .models import TodoItem, TodoLog, ActiveTimer
 from .forms import TodoItemForm, TodoLogForm, RegisterForm
-
+import todo.todo_logs as todo_logs
 
 
 from .stats import get_or_cache_stats, update_stats
@@ -152,6 +153,29 @@ def update_todo_log(request, log_id):
     
     return redirect(request.META.get('HTTP_REFERER'))
 
+
+    
+@login_required
+@csrf_protect
+def update_todo_log_partial(request, log_id):
+    form = TodoLogForm(request.POST)
+    if form.is_valid():
+        form.instance.unique_id = log_id
+        form.instance.user_id = request.user.id
+        form.instance.save()
+    else:
+        raise Exception("Error(s) updating todo log {}".format(form.errors))
+
+    update_stats(request.user.id, form.instance.date)
+
+    return render(
+        request,
+        "todo_log_form.html",
+        {"todo": TodoLogForm(instance=form.instance)},
+    )
+
+
+@csrf_protect
 @login_required
 def update_todo_item(request, item_id):
     form = TodoItemForm(request.POST)
@@ -164,6 +188,7 @@ def update_todo_item(request, item_id):
     
     return redirect(request.META.get('HTTP_REFERER'))
 
+@csrf_protect
 @login_required
 def new_todo_log(request):
     form = TodoLogForm(request.POST)
@@ -178,6 +203,29 @@ def new_todo_log(request):
     
     return redirect(request.META.get('HTTP_REFERER'))
 
+@csrf_protect
+@login_required
+def new_todo_log_partial(request):
+    form = TodoLogForm(request.POST)
+    if form.is_valid():
+        form.instance.user_id = request.user.id
+        form.instance.save()
+    else:
+        raise Exception("Error(s) creating todo log {}".format(form.errors))
+    
+
+    update_stats(request.user.id, form.instance.date)
+
+    
+    new_log = TodoLog(user_id=request.user.id, date=form.instance.date)
+    form = TodoLogForm(instance=new_log)
+    return render(request,
+                  "new_todo_log_form.html",
+                  {'form': form}
+                )
+
+
+@csrf_protect
 @login_required
 def new_todo_item(request):
     form = TodoItemForm(request.POST)
@@ -189,6 +237,8 @@ def new_todo_item(request):
     
     return redirect(request.META.get('HTTP_REFERER'))
 
+
+@csrf_protect
 @login_required
 def delete_todo_log(request, log_id):
     todo_log = TodoLog.objects.get(user_id=request.user.id,unique_id=log_id)
@@ -198,6 +248,17 @@ def delete_todo_log(request, log_id):
     
     return redirect(request.META.get('HTTP_REFERER'))
 
+@csrf_protect
+@login_required
+def delete_todo_log_partial(request, log_id):
+    todo_log = TodoLog.objects.get(user_id=request.user.id,unique_id=log_id)
+    todo_log.delete()
+
+    update_stats(request.user.id, todo_log.date)
+    
+    return HttpResponse(status=200)
+
+@csrf_protect
 @login_required
 def delete_todo_item(request, item_id):
     todo_item = TodoItem.objects.get(user_id=request.user.id, unique_id=item_id)
@@ -207,9 +268,10 @@ def delete_todo_item(request, item_id):
 
 
 
-def inner_date_todo_logs(request, date, title, templ):
+def inner_date_todo_logs(request, date, fmt_date, templ):
+
+    todo_logs_for_today = todo_logs.get_logs_for_date(request.user.id, date, sort_by='unique_id')
     
-    todo_logs_for_today = TodoLog.objects.filter(user_id=request.user.id,date=date).order_by('unique_id')
     if len(todo_logs_for_today) == 0:
         # create a list of TodoLogs from TodoItems
         all_todo_items = todo_list_or_defaults(request.user.id)
@@ -244,10 +306,11 @@ def inner_date_todo_logs(request, date, title, templ):
         active_timer = timers[0]
         
     return render(request, templ, { #"day_todo_list.html", {
-        "title": "Todo List For {}".format(title),
+        "title": "Todo List For {}".format(fmt_date),
         "todo_logs_and_timers": todo_logs_and_timers,
         "active_timer": active_timer, 
         "form": form,
+        "date": fmt_date,
         **calced_stats
     })
 
@@ -257,26 +320,56 @@ def inner_date_todo_logs(request, date, title, templ):
 def todays_todos(request):
     tz_name = request.session['tz_name']
     date = datetime.datetime.now(pytz.timezone(tz_name))
-    title = "{}/{}/{}".format(date.year, date.month, date.day) 
+    fmt_date = "{}-{}-{}".format(date.year, date.month, date.day) 
     
-    return inner_date_todo_logs(request, date, title, "day_todo_list.html")
+    return inner_date_todo_logs(request, date, fmt_date, "day_todo_list.html")
 
 @login_required
 @csrf_protect
-def todays_todos_jinja(request):
-    tz_name = request.session['tz_name']
-    date = datetime.datetime.now(pytz.timezone(tz_name))
-    title = "{}/{}/{}".format(date.year, date.month, date.day) 
+def todo_logs_for_day_partial(request, date):
+    parsed_date = dateutil.parser.parse(date)
+    todo_logs_for_today = todo_logs.get_logs_for_date(request.user.id, date, sort_by='unique_id')
+
     
-    return inner_date_todo_logs(request, date, title, "day_todo_list.jinja")
+    timers = ActiveTimer.objects.filter(linked_todo_log__in=todo_logs_for_today).distinct()
+    timer_lut = {timer.linked_todo_log_id:timer for timer in timers}
+        
+    todo_logs_and_timers = [(TodoLogForm(instance=todo_log), timer_lut.get(todo_log.unique_id)) for todo_log in todo_logs_for_today]
+    return render(request, 'todo_logs.html',
+                  {
+                      "todo_logs_and_timers": todo_logs_and_timers,
+                  })
+
+
+@login_required
+@csrf_protect
+def stats_for_day_partial(request, date):
+    parsed_date = dateutil.parser.parse(date)
+    calced_stats = get_or_cache_stats(request.user.id, parsed_date)
+    return render(
+        request,
+        "stats.html",
+        calced_stats
+    )
+
+@login_required
+@csrf_protect
+def get_todo_log_partial(request, log_id):
+    log = TodoLog.objects.get(user_id=request.user.id, unique_id=log_id)
+    timer = ActiveTimer.objects.filter(user_id=request.user.id, linked_todo_log_id=log_id).first()
+    return render(
+        request,
+        "todo_log.html",
+        {'todo': TodoLogForm(instance=log), "timer": timer}
+    )
 
 
 @login_required
 @csrf_protect
 def date_todos(request, date):
     date = dateutil.parser.parse(date)
-    title = "{}/{}/{}".format(date.year, date.month, date.day)
-    return inner_date_todo_logs(request, date, title, "day_todo_list.html")
+    fmt_date = "{}-{}-{}".format(date.year, date.month, date.day)
+    return inner_date_todo_logs(request, date, fmt_date, "day_todo_list.html")
 
 
 @login_required
@@ -307,12 +400,31 @@ def list_todo_logs_for_tag(request, tag):
                 "todo_logs": [TodoLogForm(instance=log) for log in q]
             })
 
+@csrf_protect
+@login_required
+def get_timer_partial(request):
+    
+    timers = ActiveTimer.objects.filter(user_id=request.user.id)
+    active_timer = timers[0]
+    return render(request, "timer.html",
+                  {
+                      "active_timer": active_timer
+                  })
+
+
+@csrf_protect
 @login_required
 def start_timer(request, log_id):
     ActiveTimer(user_id=request.user.id, linked_todo_log_id=log_id).save()
     return redirect(request.META.get('HTTP_REFERER'))
 
+@csrf_protect
+@login_required
+def start_timer_partial(request, log_id):
+    ActiveTimer(user_id=request.user.id, linked_todo_log_id=log_id).save()
+    return HttpResponse(status=200)
 
+@csrf_protect
 @login_required
 def pause_timer(request, log_id):
     t = ActiveTimer.objects.filter(user_id=request.user.id, linked_todo_log_id=log_id).get()
@@ -320,9 +432,17 @@ def pause_timer(request, log_id):
     t.save()
     return redirect(request.META.get('HTTP_REFERER'))
 
-
+@csrf_protect
 @login_required
-def resume_timer(request, log_id):
+def pause_timer_partial(request, log_id):
+    t = ActiveTimer.objects.filter(user_id=request.user.id, linked_todo_log_id=log_id).get()
+    t.paused = datetime.datetime.now(datetime.timezone.utc)
+    t.save()
+    return HttpResponse(status=200)
+
+
+
+def resume_timer_inner(request, log_id):
     t = ActiveTimer.objects.filter(user_id=request.user.id, linked_todo_log_id=log_id).get()
     paused_d = pytz.utc.localize(t.paused)
     now_d = datetime.datetime.now(datetime.timezone.utc)
@@ -334,11 +454,22 @@ def resume_timer(request, log_id):
     t.started += paused_dt # move start time forward by how long it was paused
 
     t.save()
-    return redirect(request.META.get('HTTP_REFERER'))
-    
 
+    
+@csrf_protect
 @login_required
-def stop_timer(request, log_id):
+def resume_timer(request, log_id):
+    resume_timer_inner(request, log_id)
+    return redirect(request.META.get('HTTP_REFERER'))
+
+@csrf_protect
+@login_required
+def resume_timer_partial(request, log_id):
+    resume_timer_inner(request, log_id)
+    return HttpResponse(status=200)
+
+    
+def stop_timer_inner(request, log_id):
     t = ActiveTimer.objects.filter(user_id=request.user.id, linked_todo_log_id=log_id).get()
 
     start_d = pytz.utc.localize(t.started)
@@ -359,6 +490,20 @@ def stop_timer(request, log_id):
 
     update_stats(request.user.id, t.started.date())
     return redirect(request.META.get('HTTP_REFERER'))
+
+
+@csrf_protect
+@login_required
+def stop_timer(request, log_id):
+    stop_timer_inner(request, log_id)
+    return redirect(request.META.get('HTTP_REFERER'))
+
+@csrf_protect
+@login_required
+def stop_timer_partial(request, log_id):
+    stop_timer_inner(request, log_id)
+    return HttpResponse(status=200)
+    
     
 
 def register(request):

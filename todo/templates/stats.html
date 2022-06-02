@@ -1,0 +1,42 @@
+<h2>Stats:</h2>
+{% if streak >= 2 %}
+<h4>Streak: {{streak}} days!</h4>
+{% elif streak == 1 %}
+<h4>Streak: 1 day</h4>
+{% else %}
+<h4>Streak: 0 days :(</h4>
+{% endif %}
+
+<div>
+  <span style="font-weight:bold;">{{percent_tasks}}% of tasks complete.</span>
+</div>
+<div>
+  <span style="font-weight:bold;">{{percent_time}}% of time complete.</span>
+</div>
+<div>
+  <span style="font-weight:bold;">This day's time:</span> {{completed_time.0}}hr{{completed_time.1}}m
+</div>
+<div>
+  <span style="font-weight:bold;">Last 7 day's time:</span> {{completed_week_time.0}}hr{{completed_week_time.1}}m <span style="font-weight:bold;">Avg:</span> {{avg_week_time.0}}hr{{avg_week_time.1}}m
+</div>
+<div>
+  <span style="font-weight:bold;">Last month's time:</span> {{completed_month_time.0}}hr{{completed_month_time.1}}m <span style="font-weight:bold;">Avg:</span> {{avg_month_time.0}}hr{{avg_month_time.1}}m
+</div>
+<div>
+  <span style="font-weight:bold;">Total time:</span> {{total_time.0}}hr{{total_time.1}}m <span style="font-weight:bold;">Avg:</span> {{avg_total_time.0}}hr{{avg_total_time.1}}m <span style="font-weight: bold;">Total days:</span> {{num_total_days}}
+</div>
+
+<div class="row">
+  {% for tagset in tags %}
+  <div class="col-md-6">
+    <h3>
+      {{tagset.0}}:
+    </h3>
+    <ul>
+      {% for tag in tagset.1 %}
+      <li>{{tag.1}} {{tag.0}}(s), {{tag.2.0}}hr{{tag.2.1}}m </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endfor %}
+</div>

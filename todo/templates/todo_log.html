@@ -1,0 +1,22 @@
+
+<form action="/update_todo_log/{{todo.instance.unique_id}}"
+      method="post" id="form-{{todo.instance.unique_id}}"
+      style="display: inline;" data-refresh='["stats"]'>
+  {% include "todo_log_form.html" %}
+  
+</form>
+<form action="/delete_todo_log/{{todo.instance.unique_id}}"
+      method="POST" style="display: inline;"
+      data-refresh='["stats"]' data-delete-id="todo-{{todo.instance.unique_id}}-row">
+  {% csrf_token %}
+  <input type="submit" value="Delete">
+</form>
+
+{% if timer is None %}
+<form action="/start_timer/{{todo.instance.unique_id}}" method="POST"
+      data-refresh='["timer", "todo-{{todo.instance.unique_id}}-row"]'
+      style="display: inline;">
+  {% csrf_token %}
+  <input type="submit" value="Start Timer">
+</form>
+{% endif %}
