@@ -270,6 +270,7 @@ def delete_todo_item(request, item_id):
 
 def inner_date_todo_logs(request, date, fmt_date, templ):
 
+    
     todo_logs_for_today = todo_logs.get_logs_for_date(request.user.id, date, sort_by='unique_id')
     
     if len(todo_logs_for_today) == 0:
@@ -287,16 +288,15 @@ def inner_date_todo_logs(request, date, fmt_date, templ):
         timer = None
     else:
         timer = ActiveTimer.objects.filter(user_id=request.user.id).first()
-        #timer_lut = {timer.linked_todo_log_id:timer for timer in timers}
+        
 
     calced_stats = get_or_cache_stats(request.user.id, date)
+    
     
     new_log = TodoLog(user_id=request.user.id, date=date)
     form = TodoLogForm(instance=new_log)
 
     
-    #todo_logs_and_timers = [(TodoLogForm(instance=todo_log), timer_lut.get(todo_log.unique_id)) for todo_log in todo_logs_for_today]
-
     
     
     # TODO: we will only allow one active timer in the future

@@ -7,7 +7,7 @@
 
   <h2>{{title}}</h2>
 
-  <div id="timer" data-refresh-url="/get_timer">
+  <div id="timer" data-refresh-url="/get_timer" data-refresh-timer="true">
       {% include "timer.html" %}
   </div>
 
@@ -108,7 +108,7 @@
 	  success: function(res) {
 	    element.innerHTML = res;
 
-	    if(id === "timer") {
+	    if($(element).data("refresh-timer") !== undefined) {
 	      refresh_timer_binding();
 	    }
 	    
