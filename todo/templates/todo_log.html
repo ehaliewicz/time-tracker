@@ -12,9 +12,9 @@
   <input type="submit" value="Delete">
 </form>
 
-{% if timer is None %}
+{% if active_timer is None %}
 <form action="/start_timer/{{todo.instance.unique_id}}" method="POST"
-      data-refresh='["timer", "todo-{{todo.instance.unique_id}}-row"]'
+      data-refresh='["timer", "todo-logs"]'
       style="display: inline;">
   {% csrf_token %}
   <input type="submit" value="Start Timer">

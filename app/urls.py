@@ -69,7 +69,7 @@ urlpatterns = [
     path("accounts/", include("django.contrib.auth.urls")), # <-- added
 
     
-
+    
     path("get_todo_log/<int:log_id>/pt", todo.views.get_todo_log_partial, name="get todo log partial"),
     path("update_todo_log/<int:log_id>/pt", todo.views.update_todo_log_partial, name="update todo log partial"),
     path("delete_todo_log/<int:log_id>/pt", todo.views.delete_todo_log_partial, name="delete todo log partial"),

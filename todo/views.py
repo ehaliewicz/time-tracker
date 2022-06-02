@@ -154,7 +154,7 @@ def update_todo_log(request, log_id):
     return redirect(request.META.get('HTTP_REFERER'))
 
 
-    
+
 @login_required
 @csrf_protect
 def update_todo_log_partial(request, log_id):
@@ -284,10 +284,10 @@ def inner_date_todo_logs(request, date, fmt_date, templ):
 
         todo_logs_for_today = new_todo_logs
         timer_lut = {}
-        timers = []
+        timer = None
     else:
-        timers = ActiveTimer.objects.filter(linked_todo_log__in=todo_logs_for_today).distinct()
-        timer_lut = {timer.linked_todo_log_id:timer for timer in timers}
+        timer = ActiveTimer.objects.filter(user_id=request.user.id).first()
+        #timer_lut = {timer.linked_todo_log_id:timer for timer in timers}
 
     calced_stats = get_or_cache_stats(request.user.id, date)
     
@@ -295,20 +295,16 @@ def inner_date_todo_logs(request, date, fmt_date, templ):
     form = TodoLogForm(instance=new_log)
 
     
-    todo_logs_and_timers = [(TodoLogForm(instance=todo_log), timer_lut.get(todo_log.unique_id)) for todo_log in todo_logs_for_today]
+    #todo_logs_and_timers = [(TodoLogForm(instance=todo_log), timer_lut.get(todo_log.unique_id)) for todo_log in todo_logs_for_today]
 
     
     
     # TODO: we will only allow one active timer in the future
-    if len(timers) == 0:
-        active_timer = None
-    else:
-        active_timer = timers[0]
-        
+            
     return render(request, templ, { #"day_todo_list.html", {
         "title": "Todo List For {}".format(fmt_date),
-        "todo_logs_and_timers": todo_logs_and_timers,
-        "active_timer": active_timer, 
+        "todo_logs": [TodoLogForm(instance=todo_log) for todo_log in todo_logs_for_today],
+        "active_timer": timer,
         "form": form,
         "date": fmt_date,
         **calced_stats
@@ -331,13 +327,12 @@ def todo_logs_for_day_partial(request, date):
     todo_logs_for_today = todo_logs.get_logs_for_date(request.user.id, date, sort_by='unique_id')
 
     
-    timers = ActiveTimer.objects.filter(linked_todo_log__in=todo_logs_for_today).distinct()
-    timer_lut = {timer.linked_todo_log_id:timer for timer in timers}
-        
-    todo_logs_and_timers = [(TodoLogForm(instance=todo_log), timer_lut.get(todo_log.unique_id)) for todo_log in todo_logs_for_today]
+    timer = ActiveTimer.objects.filter(user_id=request.user.id).first()
+    
     return render(request, 'todo_logs.html',
                   {
-                      "todo_logs_and_timers": todo_logs_and_timers,
+                      "todo_logs": [TodoLogForm(instance=todo_log) for todo_log in todo_logs_for_today],
+                      "active_timer": timer
                   })
 
 
@@ -360,7 +355,7 @@ def get_todo_log_partial(request, log_id):
     return render(
         request,
         "todo_log.html",
-        {'todo': TodoLogForm(instance=log), "timer": timer}
+        {'todo': TodoLogForm(instance=log), "active_timer": timer}
     )
 
 
@@ -403,7 +398,6 @@ def list_todo_logs_for_tag(request, tag):
 @csrf_protect
 @login_required
 def get_timer_partial(request):
-    
     timers = ActiveTimer.objects.filter(user_id=request.user.id)
     active_timer = timers[0]
     return render(request, "timer.html",

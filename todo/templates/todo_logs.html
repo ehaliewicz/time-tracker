@@ -1,5 +1,5 @@
 
-{% for todo,timer in todo_logs_and_timers %}
+{% for todo in todo_logs %}
 <div class="row form-group" style="margin-bottom: 5px;"
      id="todo-{{todo.instance.unique_id}}-row"
      data-refresh-url="/get_todo_log/{{todo.instance.unique_id}}">

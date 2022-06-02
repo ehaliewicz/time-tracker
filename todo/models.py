@@ -45,8 +45,8 @@ class ActiveTimer(models.Model):
     linked_todo_log = models.OneToOneField(TodoLog, on_delete=models.PROTECT)
     paused = models.DateTimeField(null=True)
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=False)
-
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=False, unique=True)
+    
     class Meta:
         indexes = [
             models.Index(fields=['user_id','linked_todo_log']),
@@ -56,7 +56,7 @@ class Stats(models.Model):
     date = models.DateField(null=False, primary_key=True)
     stats = models.JSONField(null=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=False)
-
+    
     class Meta:
         indexes = [
             models.Index(fields=['date', 'user_id' ]),
