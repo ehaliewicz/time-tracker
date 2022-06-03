@@ -40,3 +40,13 @@
   </div>
   {% endfor %}
 </div>
+
+<div class="row">
+  <!-- do img_bytes | safe for html version -->
+  <div class="col-md-6">
+    <img style="width:100%;" src="data:;base64,{{ week_plot }}"/>
+  </div>
+  <div class="col-md-6">
+    <img style="width:100%;" src="data:;base64,{{ month_plot }}"/>
+  </div>  
+</div>

@@ -5,5 +5,7 @@ django-crispy-forms
 django-debug-toolbar
 django-heroku
 django-jinja
+kaleido
+plotly
 python-dateutil
 pytz

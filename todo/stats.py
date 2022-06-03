@@ -1,29 +1,44 @@
 from .models import Stats, TodoLog
 import datetime
 from django.db import models
+from django.contrib.postgres import aggregates
+import itertools
 import logging
+
+import plotly.graph_objects as go
+from base64 import b64encode
+
 
 def get_hr_min(m):
     im = int(m)
     return int(im//60), im%60
 
 
-def get_stats_for_filters(user_id, tags, **filter_kwargs):
+def get_stats_for_filters(user_id, tags, logs_plot_data, **filter_kwargs):
     count = 0
     stats = {}
 
     agg_params = {
-        'time': models.Sum('duration', default=0)
+        'time': models.Sum('duration', default=0),
+        'count': models.Count('unique_id')
     }
+
     
     
+    if logs_plot_data:
+        agg_params['log_durations'] = aggregates.ArrayAgg('duration')
+        agg_params['log_tags'] = aggregates.ArrayAgg('tag')
+        agg_params['log_dates'] = aggregates.ArrayAgg('date')
+
     stats = TodoLog.objects.filter(
         user_id=user_id,
         **filter_kwargs
     ).aggregate(
-        time=models.Sum('duration',default=0),
-        count=models.Count('unique_id'),
+        **agg_params        
     )
+        
+    
+        
     
         
     processed_tags = []
@@ -49,6 +64,8 @@ def get_stats_for_filters(user_id, tags, **filter_kwargs):
 
         
         stats['tags'] = [(tag,cnt,get_hr_min(time)) for (tag,(cnt,time)) in processed_tags_d.items()]
+
+    
         
     return stats
 
@@ -59,24 +76,63 @@ def calculate_stats(user_id, date):
     start_of_month = date-datetime.timedelta(days=30)
     
     todays_stats = get_stats_for_filters(
-        user_id=user_id, tags=False, date=date
+        user_id=user_id, tags=False, logs_plot_data=False, date=date
     )
     completed_todays_stats = get_stats_for_filters(
-        user_id=user_id,tags=True, date=date, completion=True
+        user_id=user_id,tags=True, logs_plot_data=False, date=date, completion=True
     )
     week_stats = get_stats_for_filters(
-        user_id=user_id,tags=True, date__gte=start_of_week, date__lte=date, completion=True
+        user_id=user_id,tags=True, logs_plot_data=True, date__gte=start_of_week, date__lte=date, completion=True
     )
     week_stats['avg'] = week_stats['time']/7
+    if True:        
+        week_log_tags = week_stats['log_tags']
+        week_log_dates = week_stats['log_dates']
+        week_log_durations = week_stats['log_durations']
+        fig = go.Figure(data=[go.Histogram(
+            x=week_log_dates, y=week_log_durations,
+            histfunc='sum'
+        )])
+        fig.update_layout(
+            title="Last week",
+            xaxis_title="Days",
+            yaxis_title="Minutes",
+        )
+        img_bytes = fig.to_image(format='png')
+        
+        week_stats['plot_bytes'] = b64encode(img_bytes).decode('utf-8')
+        
+        
+    
     month_stats = get_stats_for_filters(
-        user_id=user_id,tags=True, date__gte=start_of_month, date__lte=date, completion=True
+        user_id=user_id,tags=True, logs_plot_data=True, date__gte=start_of_month, date__lte=date, completion=True
     )
     month_stats['avg'] = month_stats['time']/30
+    if True:        
+        month_log_tags = month_stats['log_tags']
+        month_log_dates = month_stats['log_dates']
+        month_log_durations = month_stats['log_durations']
+        dates = ["Week of {}".format(d-datetime.timedelta(days=d.weekday())) for d in month_log_dates]
+        fig = go.Figure(data=[go.Histogram(
+            x=dates, y=month_log_durations,
+            histfunc='sum'
+        )])
+        fig.update_layout(
+            title="Last month",
+            xaxis_title="Weeks",
+            yaxis_title="Minutes",
+        )
+        img_bytes = fig.to_image(format='png')
+        
+        month_stats['plot_bytes'] = b64encode(img_bytes).decode('utf-8')
+        
+        
     
     all_stats = get_stats_for_filters(
-        user_id=user_id,tags=True, completion=True
+        user_id=user_id,tags=True, logs_plot_data=False, completion=True
     )
 
+    
     pct_tasks = 0
     pct_time = 0
 
@@ -128,6 +184,9 @@ def calculate_stats(user_id, date):
         'avg_week_time': get_hr_min(week_stats['avg']),
         'completed_month_time': get_hr_min(month_stats['time']),
         'avg_month_time': get_hr_min(month_stats['avg']),
+
+        'week_plot': week_stats['plot_bytes'],
+        'month_plot': month_stats['plot_bytes'],
         
         'total_time': get_hr_min(all_stats['time']),
         'avg_total_time': avg_total_time,
@@ -138,6 +197,8 @@ def calculate_stats(user_id, date):
             ("Last 7 day's tags", list(week_stats['tags'])), 
             ("Last 30 day's tags", list(month_stats['tags'])), 
             ("All tags", list(all_stats['tags']))],
+        'week_hours_img': None,
+        'month_hours_img': None
     }
 
 
