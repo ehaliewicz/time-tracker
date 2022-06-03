@@ -88,7 +88,7 @@ def calculate_stats(user_id, date):
     if True:        
         week_log_tags = week_stats['log_tags']
         week_log_dates = week_stats['log_dates']
-        week_log_durations = week_stats['log_durations']
+        week_log_durations = [d/60 for d in week_stats['log_durations']]
         fig = go.Figure(data=[go.Histogram(
             x=week_log_dates, y=week_log_durations,
             histfunc='sum'
@@ -96,7 +96,7 @@ def calculate_stats(user_id, date):
         fig.update_layout(
             title="Last week",
             xaxis_title="Days",
-            yaxis_title="Minutes",
+            yaxis_title="Hours",
         )
         img_bytes = fig.to_image(format='png')
         
@@ -111,7 +111,7 @@ def calculate_stats(user_id, date):
     if True:        
         month_log_tags = month_stats['log_tags']
         month_log_dates = month_stats['log_dates']
-        month_log_durations = month_stats['log_durations']
+        month_log_durations = [d/60 for d in month_stats['log_durations']]
         dates = ["Week of {}".format(d-datetime.timedelta(days=d.weekday())) for d in month_log_dates]
         fig = go.Figure(data=[go.Histogram(
             x=dates, y=month_log_durations,
@@ -120,7 +120,7 @@ def calculate_stats(user_id, date):
         fig.update_layout(
             title="Last month",
             xaxis_title="Weeks",
-            yaxis_title="Minutes",
+            yaxis_title="Hours",
         )
         img_bytes = fig.to_image(format='png')
         
