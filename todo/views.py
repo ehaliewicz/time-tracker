@@ -482,7 +482,7 @@ def stop_timer_inner(request, log_id):
     t.delete()
     log.save()
 
-    update_stats(request.user.id, t.started.date())
+    update_stats(request.user.id, log.instance.date)
     return redirect(request.META.get('HTTP_REFERER'))
 
 
