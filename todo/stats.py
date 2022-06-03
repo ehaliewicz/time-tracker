@@ -6,8 +6,7 @@ import itertools
 import logging
 
 import plotly.graph_objects as go
-from base64 import b64encode
-
+import urllib.parse
 
 def get_hr_min(m):
     im = int(m)
@@ -98,9 +97,9 @@ def calculate_stats(user_id, date):
             xaxis_title="Days",
             yaxis_title="Hours",
         )
-        img_bytes = fig.to_image(format='png')
+        img_bytes = fig.to_image(format='svg')
         
-        week_stats['plot_bytes'] = b64encode(img_bytes).decode('utf-8')
+        week_stats['plot_bytes'] = urllib.parse.quote(img_bytes.decode('utf-8')) #b64encode(img_bytes).decode('utf-8')
         
         
     
@@ -122,9 +121,9 @@ def calculate_stats(user_id, date):
             xaxis_title="Weeks",
             yaxis_title="Hours",
         )
-        img_bytes = fig.to_image(format='png')
+        img_bytes = fig.to_image(format='svg')
         
-        month_stats['plot_bytes'] = b64encode(img_bytes).decode('utf-8')
+        month_stats['plot_bytes'] = urllib.parse.quote(img_bytes.decode('utf-8'))
         
         
     
