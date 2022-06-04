@@ -71,7 +71,7 @@ def get_stats_for_filters(user_id, tags, logs_plot_data, **filter_kwargs):
 
 def calculate_stats(user_id, date):
     
-    start_of_week = date-datetime.timedelta(days=7)
+    start_of_week = date-datetime.timedelta(days=6)
     start_of_month = date-datetime.timedelta(days=30)
     
     todays_stats = get_stats_for_filters(
