@@ -1,7 +1,7 @@
 {% if active_timer is not None %}
 <div class="row" style="margin-bottom: 20px; margin-top: 20px;"
      id="inner-timer">
-  <div class="col-md-5">
+  <div class="col-md-5 col-xs-7">
     <h4 style="margin-bottom: 0px; margin-top: 3px;">
       Current Timer - {{active_timer.linked_todo_log.description}}
       - <span id="current_time"></span>
@@ -22,7 +22,7 @@
   
   {% else %}
 
-  <div class="col-md-1">
+  <div class="col-md-1 col-xs-2">
     <form action="/pause_timer/{{active_timer.linked_todo_log.unique_id}}" data-refresh='["timer"]'>
       {% csrf_token %}
       <input type="submit" value="Pause">
@@ -30,7 +30,7 @@
   </div>
 
   {% endif %}
-  <div class="col-md-1">
+  <div class="col-md-1 col-xs-2">
     <form action="/stop_timer/{{active_timer.linked_todo_log.unique_id}}" data-delete-id="inner-timer"
 	  data-refresh='["todo-logs", "stats"]'>
       {% csrf_token %}
