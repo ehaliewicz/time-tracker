@@ -60,7 +60,6 @@ INSTALLED_APPS = [
     "captcha",
     "crispy_forms",
     "debug_toolbar",
-    "django_jinja",
     "corsheaders",
     "todo",
 ]
@@ -81,19 +80,6 @@ MIDDLEWARE = [
 ROOT_URLCONF = "app.urls"
 
 TEMPLATES = [
-    {
-        "BACKEND": "django_jinja.backend.Jinja2",
-        "DIRS": [],
-        "APP_DIRS": True,
-        "OPTIONS": {
-            "match_extension": ".jinja",
-            "bytecode_cache": {
-                "name": "default",
-                "backend": "django_jinja.cache.BytecodeCache",
-                "enabled": True,
-            },
-        }
-    },
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [],
