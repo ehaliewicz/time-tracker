@@ -1,22 +1,38 @@
+<div class="col-md-7 col-xs-12">
+  <form action="/update_todo_log/{{todo.instance.unique_id}}"
+	method="POST" id="form-{{todo.instance.unique_id}}"
+	data-refresh='["stats"]'>
+    {% include "todo_log_form.html" %}  
+  </form>
+</div>
 
-<form action="/update_todo_log/{{todo.instance.unique_id}}"
-      method="post" id="form-{{todo.instance.unique_id}}"
-      style="display: inline;" data-refresh='["stats"]'>
-  {% include "todo_log_form.html" %}
-  
-</form>
-<form action="/delete_todo_log/{{todo.instance.unique_id}}"
-      method="POST" style="display: inline;"
-      data-refresh='["stats"]' data-delete-id="todo-{{todo.instance.unique_id}}-row">
-  {% csrf_token %}
-  <input type="submit" value="Delete">
-</form>
+<div class="col-xs-1 col-md-0"></div>
+
+
+<div class="col-md-1 col-xs-6">
+  <form action="/delete_todo_log/{{todo.instance.unique_id}}"
+	method="POST"
+	data-refresh='["stats"]' data-delete-id="todo-{{todo.instance.unique_id}}-row">
+    <div class="row">
+      {% csrf_token %}
+      <div class="col-xs-8 col-md-0"></div>
+      <div class="col-md-12 col-xs-4">
+	<input type="submit" style="width: 100%;" value="Delete">
+      </div>
+    </div>
+  </form>
+</div>
 
 {% if active_timer is None %}
-<form action="/start_timer/{{todo.instance.unique_id}}" method="POST"
-      data-refresh='["timer", "todo-logs"]'
-      style="display: inline;">
-  {% csrf_token %}
-  <input type="submit" value="Start Timer">
-</form>
+<div class="col-md-2 col-xs-5">
+  <form action="/start_timer/{{todo.instance.unique_id}}" method="POST"
+	data-refresh='["timer", "todo-logs"]'>
+    {% csrf_token %}
+    <div class="row">
+      <div class="col-md-8 start-timer-div-custom-width">
+	<input type="submit" value="Start Timer" class="start-timer-custom-width">
+      </div>
+    </div>
+  </form>
+</div>
 {% endif %}
