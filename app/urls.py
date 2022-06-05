@@ -37,10 +37,10 @@ urlpatterns = [
     path("todo_list/", todo.views.todo_list, name="todo list"),
     path("", todo.views.redirect_to_today, name=""),
 
-    path("import_log_file/", todo.views.import_logs_for_date, name="import logs for date"),
+    #path("import_log_file/", todo.views.import_logs_for_date, name="import logs for date"),
     #path("import_todo_file", todo.views.import_todo_file, name="import todo file"),
 
-    path("logs_by_tag/<str:tag>", todo.views.list_todo_logs_for_tag, name="list todos for tag"),
+    #path("logs_by_tag/<str:tag>", todo.views.list_todo_logs_for_tag, name="list todos for tag"),
 
     path("start_timer/<int:log_id>", todo.views.start_timer, name="start timer for log"),
     path("pause_timer/<int:log_id>", todo.views.pause_timer, name="pause timer for log"),
@@ -49,7 +49,7 @@ urlpatterns = [
     
     path("favicon.ico", RedirectView.as_view(url=staticfiles_storage.url('img/favicon.ico'))),
 
-    path("__debug__/", include("debug_toolbar.urls")),
+    #path("__debug__/", include("debug_toolbar.urls")),
 
 
     path("admin/", admin.site.urls, name="admin page"),

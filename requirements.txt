@@ -4,7 +4,7 @@ django-cors-headers
 django-crispy-forms
 django-debug-toolbar
 django-heroku
-django-jinja
+django-recaptcha
 kaleido
 newrelic
 plotly
