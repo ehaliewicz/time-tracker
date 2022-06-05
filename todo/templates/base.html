@@ -63,19 +63,12 @@
       
       {% if request.path == "/todo_list/" %}
       <li class="active">
-        <a href="/todo_list"><span class="glyphicon glyphicon-list-alt"></span> Todo List</a>
+        <a href="/todo_list"><span class="glyphicon glyphicon-list-alt"></span> Default Todo List</a>
       </li>
       {% else %}
       <li>
-        <a href="/todo_list"><span class="glyphicon glyphicon-list-alt"></span> Todo List</a>
+        <a href="/todo_list"><span class="glyphicon glyphicon-list-alt"></span> Default Todo List</a>
       </li>
-      {% endif %}
-      
-      {% if request.path == "/import_log_file/" %}
-      <li class="active">
-        <a href="/import_log_file"><span class="glyphicon glyphicon-home"></span> Import Log File</a>
-      </li>
-      {% else %}
       {% endif %}
       
       <li>
