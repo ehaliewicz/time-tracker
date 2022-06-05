@@ -483,7 +483,7 @@ def stop_timer_inner(request, log_id):
     log.save()
 
     update_stats(request.user.id, log.date)
-    return redirect(request.META.get('HTTP_REFERER'))
+    
 
 
 @csrf_protect
