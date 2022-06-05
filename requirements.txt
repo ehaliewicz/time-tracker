@@ -6,6 +6,7 @@ django-debug-toolbar
 django-heroku
 django-jinja
 kaleido
+newrelic
 plotly
 python-dateutil
 pytz
