@@ -48,7 +48,7 @@ CORS_ALLOW_CREDENTIALS = True
 
 # Application definition
 RECAPTCHA_PUBLIC_KEY = os.getenv('RECAPTCHA_PUBLIC_KEY', '')
-RECAPTCHA_PRIVATE_KEY = os.getenv('RECAPTCHA_SECRET_KEY', '')
+RECAPTCHA_PRIVATE_KEY = os.getenv('RECAPTCHA_PRIVATE_KEY', '')
 
 INSTALLED_APPS = [
     "django.contrib.admin",
