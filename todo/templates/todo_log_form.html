@@ -1,21 +1,28 @@
 <div class="row">
-{% csrf_token %}
-<div class="col-md-1 col-xs-1">
-  {{todo.completion}}
-</div>
-<div class="col-md-4 col-xs-6" style="font-weight:bold;">
-  <input type="text" name="description" value="1x podcast #1" maxlength="1024" required="" id="id_description" style="width: 100%;">
-</div>
-<div class="col-md-2 col-xs-5"><input class="duration-custom-width" type="number" name="duration" value="15" required="" id="id_duration"></div>
 
+  {% csrf_token %}
 
-<div class="col-xs-1 col-md-0"></div>
-<div class="col-md-3 col-xs-6"><input type="text" class="tag-custom-width" name="tag" value="podcast" maxlength="128" id="id_tag"></div>
+  <div class="col-md-1 col-xs-1">
+    {{todo.completion}}
+  </div>
+  
+  <div class="col-md-4 col-xs-6" style="font-weight:bold;">
+    <input type="text" name="description" value="{{todo.instance.description}}" maxlength="1024" required="" id="id_description" style="width: 100%;">
+  </div>
+  
+  <div class="col-md-2 col-xs-5">
+    <input class="duration-custom-width" type="number" name="duration" value="{{todo.instance.duration}}" required="" id="id_duration">
+  </div>
+  
+  
+  <div class="col-xs-1 col-md-0"></div>
 
-<span style="display: none;">{{todo.date}}</span>
+  <div class="col-md-3 col-xs-6"><input type="text" class="tag-custom-width" name="tag" value="{{todo.instance.tag}}" maxlength="128" id="id_tag"></div>
+  
+  <span style="display: none;">{{todo.date}}</span>
 
-<div class="col-md-2 col-xs-3">
-  <input type="submit" value="Update" style="width: 100%;" class="submit-btn-custom-width">
-</div>
+  <div class="col-md-2 col-xs-3">
+    <input type="submit" value="Update" style="width: 100%;" class="submit-btn-custom-width">
+  </div>
 
 </div>
