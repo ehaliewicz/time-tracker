@@ -8,9 +8,13 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
   <script type="text/javascript" src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
 
-  <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.9.0/moment-with-locales.js"></script>
-  <script src="//cdn.rawgit.com/Eonasdan/bootstrap-datetimepicker/e8bddc60e73c1ec2475f827be36e1957af72e2ea/src/js/bootstrap-datetimepicker.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.css" rel="stylesheet"/>
 
+
+  <!--<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.9.0/moment-with-locales.js"></script>
+  <script src="//cdn.rawgit.com/Eonasdan/bootstrap-datetimepicker/e8bddc60e73c1ec2475f827be36e1957af72e2ea/src/js/bootstrap-datetimepicker.js"></script>
+  -->
   <style type="text/css">
     .jumbotron {
         background: #532f8c;
@@ -46,14 +50,9 @@
         max-width: 100%
     }
 
-    #header-date-picker > input.form-control {
-      background-color: darkgrey;
+    div.datepicker-dropdown {
+      margin-top: -15px;
     }
-
-    #header-dark-picker > span.input-group-addon {
-      background-color: darkgrey;
-    }
-    
   </style>
 </head>
 <body style="background-color: #eeeeee;">
@@ -72,11 +71,11 @@
       {% endif %}
 
       <li id="click-open-date" style="cursor: pointer;">
-	<a href='#'><span class="glyphicon glyphicon-calendar"></span> Select date</a>
+	<a><span class="glyphicon glyphicon-calendar"></span> Select date</a>
 	<div class='input-group date' id='header-date-picker'>
           <input type='text' class="form-control datetimepicker-input" style="display:none;" />
           <span class="input-group-addon" style="display:none;">
-            <span class="glyphicon glyphicon-time"></span>
+            <span class="glyphicon glyphicon-time" style="display:none;"></span>
           </span>
         </div>
       </li>
@@ -106,23 +105,39 @@
 </body>
 <script>
   $(function() {
-    var dt = null;
-    $("#click-open-date").on("click", function() {
-      if(dt !== null) { dt.data("DateTimePicker").hide(); dt = null; return;  }
-      
-      dt = $('#header-date-picker').datetimepicker({
-	format: 'YYYY-MM-DD'
-      });
-      $("#header-date-picker").data("DateTimePicker").show();
-      $("#header-date-picker").on("dp.change", function(e) {
-	console.log(e.date);
-	const new_uri = window.location.origin + "/day/" + e.date.format("YYYY-MM-DD");
-	window.location = new_uri;
-      });
-      $("#header-date-picker").on("blur", function() {
-	dt.data("DateTimePicker").hide(); dt = null;
-      });
+    var dt = $('#header-date-picker').datepicker({
+      format: 'yyyy-mm-dd',
+    }).show();
+
+
+    dt.on("changeDate", function(e) {
+      const new_uri = (
+	window.location.origin + "/day/"
+	  + e.date.getFullYear() + "-" + (e.date.getMonth()+1) + "-" + e.date.getDate()
+      );
+      window.location = new_uri;
     });
+
+    let showed = false;
+    
+    dt.on("show", function() {
+      showed = true;
+    });
+    dt.on("hide", function() {
+      showed = false;
+    });
+
+
+    
+    $("#click-open-date").on("click", function() {
+      if(showed) {
+	dt.datepicker('hide');
+      } else {
+	dt.datepicker('show');
+      }
+    });
+
+    
   });
 </script>
 </html>
