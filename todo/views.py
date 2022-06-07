@@ -269,7 +269,6 @@ def delete_todo_item(request, item_id):
 
 
 def inner_date_todo_logs(request, date, fmt_date, templ):
-
     
     todo_logs_for_today = todo_logs.get_logs_for_date(request.user.id, date, sort_by='unique_id')
     
@@ -295,12 +294,8 @@ def inner_date_todo_logs(request, date, fmt_date, templ):
     
     new_log = TodoLog(user_id=request.user.id, date=date)
     form = TodoLogForm(instance=new_log)
-
     
-    
-    
-    # TODO: we will only allow one active timer in the future
-            
+        
     return render(request, templ, { #"day_todo_list.html", {
         "title": "Todo List For {}".format(fmt_date),
         "todo_logs": [TodoLogForm(instance=todo_log) for todo_log in todo_logs_for_today],
