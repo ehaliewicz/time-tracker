@@ -137,6 +137,12 @@
 	$.ajax({
 	  url: refresh_url,
 	  type: 'GET',
+	  error: function(jqXHR, textStatus, errorThrown) {
+	    console.error(errorThrown);
+	    if(jqXHR.status === 403) {
+	      window.location.path = "/accounts/login";
+	    }
+	  },
 	  success: function(res) {
 	    element.innerHTML = res;
 
@@ -160,6 +166,12 @@
 	$.ajax({
           url: url,
           type: 'post', data: $(e.currentTarget).serialize(),
+	  error: function(jqXHR, textStatus, errorThrown) {
+	    console.error(errorThrown);
+	    if(jqXHR.status === 403) {
+	      window.location.path = "/accounts/login";
+	    }
+	  },
           success: function(res){
 	    // server will return just the updated html, replace it here
 	    e.currentTarget.innerHTML = res;
@@ -171,10 +183,7 @@
 	      }
 	    }
 	  },
-	  error: function(jqXHR, status, error) {
-	    
-	    
-	  }
+	  
 	});
 
       }
