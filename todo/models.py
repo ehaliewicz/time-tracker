@@ -2,6 +2,7 @@ from django.db import models
 from django.forms import ModelForm
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField
+from rest_framework import serializers
 
 class TodoItem(models.Model):
     unique_id = models.AutoField(primary_key=True)
@@ -38,6 +39,12 @@ class TodoLog(models.Model):
             models.Index(fields=['user_id','date', 'duration', 'unique_id'])
             
         ]
+        
+class TodoLogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TodoLog
+        fields = ['unique_id', 'completion', 'description', 'duration', 'tag', 'date']
+        
 
         
 class ActiveTimer(models.Model):
@@ -51,6 +58,15 @@ class ActiveTimer(models.Model):
         indexes = [
             models.Index(fields=['user_id','linked_todo_log']),
         ]
+
+class ActiveTimerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ActiveTimer
+        fields = ['started', 'linked_todo_log', 'paused']
+        depth = 1
+        #exclude = ['user']
+    
+    
 
 class Stats(models.Model):
     date = models.DateField(null=False, primary_key=True)

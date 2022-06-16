@@ -5,6 +5,7 @@ django-crispy-forms
 django-debug-toolbar
 django-heroku
 django-recaptcha
+djangorestframework
 kaleido
 plotly
 python-dateutil

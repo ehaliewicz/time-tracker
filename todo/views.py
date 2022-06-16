@@ -276,33 +276,13 @@ def inner_date_todo_logs(request, date, fmt_date, templ):
         # create a list of TodoLogs from TodoItems
         all_todo_items = todo_list_or_defaults(request.user.id)
 
-        new_todo_logs = []
-        for item in all_todo_items:
-            log = todoItemToLog(request.user.id, item, date)
-            log.save()
-            new_todo_logs.append(log)
-
-        todo_logs_for_today = new_todo_logs
-        timer_lut = {}
-        timer = None
-    else:
-        timer = ActiveTimer.objects.filter(user_id=request.user.id).first()
-        
-
-    calced_stats = get_or_cache_stats(request.user.id, date)
+        new_todo_logs = [todoItemToLog(request.user.id, item, date) for item in all_todo_items]
+        TodoLog.objects.bulk_create(new_todo_logs)
+            
     
-    
-    new_log = TodoLog(user_id=request.user.id, date=date)
-    form = TodoLogForm(instance=new_log)
-    
-        
     return render(request, templ, { #"day_todo_list.html", {
         "title": "Todo List For {}".format(fmt_date),
-        "todo_logs": [TodoLogForm(instance=todo_log) for todo_log in todo_logs_for_today],
-        "active_timer": timer,
-        "form": form,
         "date": fmt_date,
-        **calced_stats
     })
 
 

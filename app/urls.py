@@ -7,7 +7,7 @@ from django.conf.urls.static import static
 from django.contrib.auth import views
 from todo.forms import UserLoginForm
 import todo.views
-
+import todo.api
 admin.autodiscover()
 
 
@@ -83,5 +83,21 @@ urlpatterns = [
     path("pause_timer/<int:log_id>/pt", todo.views.pause_timer_partial, name="pause timer for log partial"),
     path("resume_timer/<int:log_id>/pt", todo.views.resume_timer_partial, name="resume timer for log partial"),
     path("stop_timer/<int:log_id>/pt", todo.views.stop_timer_partial, name="stop timer for log partial"),
+
+    
+    # api endpoints
+    path("api/get_todo_log/<int:log_id>", todo.api.get_todo_log, name="api get todo log"),
+    path("api/update_todo_log/<int:log_id>", todo.api.update_todo_log, name="api update todo log"),
+    path("api/delete_todo_log/<int:log_id>", todo.api.delete_todo_log, name="api delete todo log"),
+    path("api/new_todo_log", todo.api.new_todo_log, name="api new todo log"),
+    
+    path("api/stats_for_day/<str:date>", todo.api.stats_for_day, name="api stats"),
+    path("api/todo_logs_for_day/<str:date>", todo.api.todo_logs_for_day, name="api logs for day"),
+    
+    path("api/get_timer", todo.api.get_timer, name="api get timer"),
+    path("api/start_timer/<int:log_id>", todo.api.start_timer, name="api start timer for log"),
+    path("api/pause_timer/<int:log_id>", todo.api.pause_timer, name="api pause timer for log"),
+    path("api/resume_timer/<int:log_id>", todo.api.resume_timer, name="resume timer for log"),
+    path("api/stop_timer/<int:log_id>", todo.api.stop_timer, name="api stop timer for log"),
     
 ]

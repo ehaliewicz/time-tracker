@@ -2,31 +2,10 @@
 {% load static %}
 
 {% block content %}
-<div class="container">
+<div id="inner-body" class="container">
 
 
-  <h2>{{title}}</h2>
 
-  <div id="timer" data-refresh-url="/get_timer" data-refresh-timer="true">
-      {% include "timer.html" %}
-  </div>
-
-
-  <div id="todo-logs" data-refresh-url="/todo_logs_for_day/{{date}}">
-    {% include "todo_logs.html" %}
-    
-  </div>
-  
-
-
-  <h3>New Todo Log Entry (for this date only): </h3>
-  <form action="/new_todo_log" data-refresh='["todo-logs", "stats"]'>
-    {% include "new_todo_log_form.html" %}
-  </form>
-  
-  <div id="stats" data-refresh-url="/stats_for_day/{{date}}">
-    {% include "stats.html" %}
-  </div>
 </div>
 
 <style>
@@ -60,138 +39,598 @@
     margin-left: 8.33333333%;
   }
   
-</style>  
+</style>
 
-  <script type="text/javascript">
+
+
+<script type="module">
+
+  import { h, render, } from 'https://cdn.skypack.dev/preact';
+  import { useState, useEffect, useMemo, useReducer } from 'https://cdn.skypack.dev/preact/hooks';
+  import htm from 'https://cdn.skypack.dev/htm';
+  //import { debounce, throttle } from 'https://cdn.skypack.dev/lodash';
+
+  const html = htm.bind(h);
+  
+  const date = "{{date}}";
+  const title = "{{title}}";
+
+  
+  function get_hr_min_sec(seconds) {
+
+    // say seconds is 365
+
+    // mins = 60
     
-    (function() {
-      let timerInterval = undefined;
+    const mins = seconds/60;
+    const rem_secs = seconds%60
+    
+    const hours = mins/60;
+    const rem_mins = mins%60;
+
+    return [Math.trunc(hours),Math.trunc(rem_mins),Math.trunc(rem_secs)];
+  }
+
+  function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+  }
+
+  const csrfCookie = getCookie('csrftoken');
+  
+  function fetchReq(url, props) {
+    
+    let props2 = {
+      ...props,
+      mode: 'cors',
+      cache: 'no-cache',
+      redirect: 'follow',
+      credentials: 'include',
+      headers: {
+	'Content-Type': 'application/json',
+	'X-CSRFToken': csrfCookie,
+      }
+    };
+    return fetch(url, props2);
+  }  
+
+  
+  //const resp = await fetch(`/api/todo_logs_for_day/${date}`);
+  //const todos = await resp.json();
+  //const todo_logs_area = document.getElementById("todo-logs");
+
+  const inner_body = document.getElementById("inner-body");
+  render(html`<${DayTodoListPage}/>`, inner_body);
+  
+  //render(html`<${App} name="World" />`, document.body);
+  
+  function DayTodoListPage() {
+
+    const [timer, set_timer] = useState({});
+    const [todo_list, set_todo_list] = useState([]);
+    const [stats, set_stats] = useState({});
+    
+    
+    const update_todo_in_list = function(todo_json, id) {
       
-      
-	const get_hr_min = function(seconds) {
-
-	    // say seconds is 365
-
-	    // mins = 60
-	    
-	    const mins = seconds/60;
-	    const rem_secs = seconds%60
-	    
-	    const hours = mins/60;
-	    const rem_mins = mins%60;
-
-	    return [Math.trunc(hours),Math.trunc(rem_mins),Math.trunc(rem_secs)];
+      const new_todo_list = todo_list.map((t) => {
+	if (t.unique_id === id) {
+	  return todo_json;
+	} else {
+	  return t;
 	}
+      });
+      set_todo_list(new_todo_list);
+    }
+    
+    const remove_todo_from_list = function(id) {
+      const new_todo_list = todo_list.filter((t) => t.unique_id !== id);
+      set_todo_list(new_todo_list);
+    }
+    
+    const add_todo_to_list = function(json) {
+      const new_todo_list = todo_list.concat([json]);
+      set_todo_list(new_todo_list);
+    }
 
-      const refresh_timer_binding = function() {
-	if(timerInterval) { clearInterval(timerInterval); }
-	
-	const timer = $("timer_start_ts");
-	if (timer) {
+    const refresh_todo_log = async function(id) {
+      const resp = await fetchReq(
+	`/api/get_todo_log/${id}`,
+	{
+	  method: 'GET'
+	});
+      if(!resp.ok) {
+	return;
+      }
+      const json = await resp.json();
+      update_todo_in_list(json, id);
+      
+    }
+    
+    const update_todo = async function(todo_props) {
+      const { description, duration, completion, date, tag, unique_id } = todo_props;
+      const resp = await fetchReq(
+	`/api/update_todo_log/${unique_id}`,
+	{
+	  method: 'POST',
+	  body: JSON.stringify(todo_props),
+	}
+      );
+      if(!resp.ok) {
+	return false;
+      }
 
-	  let start_ts = new Date($("#timer_start_ts").text());
-	  
-	  const updateTimer = function(ms) {
-	    
-	    const [hr,min,sec] = get_hr_min(ms/1000);
-	    $("#current_time").text(
-	      (hr.toString().padStart(2, '0') + ':' + 
-	       min.toString().padStart(2, '0') + ':' + 
-	       sec.toString().padStart(2, '0'))	     
-	    );
-	    
-	  }
-	  
-	  const is_paused = $("#timer_pause_ts").length === 1;
-	  
-	  if(is_paused) {
-	    const pause_ts = new Date($("#timer_pause_ts").text());
-	    const ms = pause_ts - start_ts;
-	    
-	    updateTimer(ms);
-	    
-	  } else {
-	    
-	    const int_func = function() {
-	      const now_ts = Date.now();
-	      const dt = now_ts - start_ts;
-	      updateTimer(dt);
-	    }
-	    
-	    int_func();
-	    timerInterval = setInterval(int_func, 1000);
-	  }
+      const json = await resp.json();
+      update_todo_in_list(json, unique_id);
+
+      await fetch_stats();
+      return true;
+    }
+
+    
+    const delete_todo = async function(unique_id) {
+      const resp = await fetchReq(
+	`/api/delete_todo_log/${unique_id}`,
+	{
+	  method: 'POST',
+	}
+      );
+      if(!resp.ok) {
+	return;
+      }
+      remove_todo_from_list(unique_id);
+      
+      await fetch_stats();
+    }
+
+    const new_todo_log = async function(props) {
+      const resp = await fetchReq(
+	'/api/new_todo_log',
+	{
+	  method: 'POST',
+	  body: JSON.stringify(props),
+	}
+      );
+      
+      if(!resp.ok) {
+	return false;
+      }
+      const json = await resp.json();
+      add_todo_to_list(json);
+
+      await fetch_stats();
+      return true;
+    }
+
+    const start_timer = async function(id) {
+      // create a fake timer so it starts counting immediately for better user experience
+      const now_dt = new Date();
+      const ds = now_dt.toISOString();
+
+      let desc = '';
+      for(var i = 0; i < todo_list.length; i++) {
+	if(todo_list[i].unique_id === id) {
+	  desc = todo_list[i].description;
+	  break;
 	}
       }
-
-      
-
-
-      
-
-      const refresh_element = function(id) {
-	const element = document.getElementById(id);
-	
-	const refresh_url = $(element).data("refresh-url") + "/pt";
-	
-	$.ajax({
-	  url: refresh_url,
-	  type: 'GET',
-	  error: function(jqXHR, textStatus, errorThrown) {
-	    console.error(errorThrown);
-	    if(jqXHR.status === 403) {
-	      window.location.path = "/accounts/login";
-	    }
-	  },
-	  success: function(res) {
-	    element.innerHTML = res;
-
-	    if($(element).data("refresh-timer") !== undefined) {
-	      refresh_timer_binding();
-	    }
-	    
-	  }
+      set_timer({
+	'linked_todo_log': {
+	  'description': desc
+	},
+	'paused': null,
+	'started': ds.slice(0, ds.length-1)	
+      });
+      const resp = await fetchReq(
+	`/api/start_timer/${id}`,
+	{
+	  method: 'POST'
 	});
-	
+      if(!resp.ok) {
+	set_timer({});
+      } else {
+	const json = await resp.json();
+	set_timer(json);
       }
-            
-      const submit_form = function(e) {
-	
-	
-	e.preventDefault();
-	const refresh_targets = $(e.currentTarget).data('refresh');
-	const delete_target = $(e.currentTarget).data('delete-id');
-	
-	const url = e.currentTarget.action + "/pt";
-	$.ajax({
-          url: url,
-          type: 'post', data: $(e.currentTarget).serialize(),
-	  error: function(jqXHR, textStatus, errorThrown) {
-	    console.error(errorThrown);
-	    if(jqXHR.status === 403) {
-	      window.location.path = "/accounts/login";
-	    }
-	  },
-          success: function(res){
-	    // server will return just the updated html, replace it here
-	    e.currentTarget.innerHTML = res;
-
-	    if(delete_target !== undefined) { document.getElementById(delete_target).remove(); }
-	    if(refresh_targets != undefined) {
-	      for(var i = 0; i < refresh_targets.length; i++) {
-		refresh_element(refresh_targets[i]);
-	      }
-	    }
-	  },
-	  
+    }
+    
+    const stop_timer = async function(id) {
+      const old_timer = timer;
+      set_timer({});
+      const resp = await fetchReq(
+	`/api/stop_timer/${id}`,
+	{
+	  method: 'POST'
 	});
-
-      }
-
-      $("body").on("submit", "form", submit_form);
-      refresh_timer_binding();
+      const p2 = fetch_stats;
+      const p3 = refresh_todo_log(id);
       
+      if (!resp.ok) {
+	set_timer(old_timer);
+      }
+      await p2;
+      await p3;
+    }
+    
+    const resume_timer = async function(id) {
+      const old_timer = timer;
+      const fake_timer = {...old_timer, paused: null};
+      set_timer(fake_timer);
+      const resp = await fetchReq(
+	`/api/resume_timer/${id}`,
+	{
+	  method: 'POST'
+	});
+      if (resp.ok) {
+	const json = await resp.json();
+	set_timer(json);
+      }
+    }
+    
+    const pause_timer = async function(id) {
+      const old_timer = timer;
+      const now_dt = new Date();
+      const ds = now_dt.toISOString();
+      const fake_timer = {...old_timer, paused: ds.slice(0, ds.length-1)};
+      set_timer(fake_timer);
+      const resp = await fetchReq(
+	`/api/pause_timer/${id}`,
+	{
+	  method: 'POST'
+	});
+      if (resp.ok) {
+	const json = await resp.json();
+	set_timer(json);
+      }
+    }
+
+    const fetch_stats = async function() {
+      const resp = await fetch(`/api/stats_for_day/${date}`);
+      if(resp.ok) {
+        const stats = await resp.json();
+	set_stats(stats);
+      }
+    }
+
+    
+    useEffect(async () => {
+      
+      const todos_fetch = await fetch(`/api/todo_logs_for_day/${date}`);
+      const todos = await todos_fetch.json();
+      set_todo_list(todos);
+
+      const timer_fetch = await fetch('/api/get_timer');
+      const timer_json = await timer_fetch.json();
+      set_timer(timer_json);
+
+      await fetch_stats();
+      
+
+    }, []);
+    
+    const has_timer = timer.linked_todo_log !== undefined && timer.linked_todo_log != null;
+
+    return html`
+        <h2>${title}</h2>
+        
+        <${Timer} ...${timer} pause_timer=${pause_timer} stop_timer=${stop_timer} resume_timer=${resume_timer}/>
+        
+        <${TodoList} todos=${todo_list} has_active_timer=${has_timer} start_timer=${start_timer} update_todo=${update_todo} delete_todo=${delete_todo}/>
+        <${NewTodoLogForm} new_todo_log=${new_todo_log}/>
+
+        <${Stats} ...${stats}/>
+
+        
+      `;
+    
+  }
+
+  function NewTodoLogForm(props) {
+    const date = "{{date}}";
+    const { new_todo_log } = props;
+    const [desc, set_desc] = useState('');
+    const [dur, set_dur] = useState(0);
+    const [comp, set_comp] = useState(false);
+    const [tag, set_tag] = useState('');
+
+    const submit_todo_log_form = async function() {
+      const res = await props.new_todo_log({
+	date, duration: dur, description: desc, tag: tag, completion: comp
+      });
+      if(res) {
+	set_desc('');
+	set_dur(0);
+	set_comp(false);
+	set_tag('');
+      }
+    }
+
+    return html`
+      <h3>New Todo Log Entry (for this date only): </h3>
+      <label>Completion: </label> <input type="checkbox" value=${comp} onChange=${(e)=>set_comp(e.target.checked)}/><span> </span>
+      <label>Description: </label> <input type="text" value=${desc} maxlength="1024" onChange=${(e)=>set_desc(e.target.value)} required=""/><span> </span> 
+      <label>Duration: </label> <input type="number" required="" value=${dur} onChange=${(e)=>set_dur(e.target.valueAsNumber)}/>m<span> </span>
+      <label>Tag: </label> %<input maxlength="128" type="text" value=${tag} onChange=${(e)=>set_tag(e.target.value)}/><span> </span>
+      <input type="submit" value="Add Todo Log" onClick=${submit_todo_log_form}/>
+    `;
+
+  }
+
+  
+
+  function Timer(props) {
+    
+    const [counter, increment] = useReducer((state) => state+1, 0);
+
+    const { linked_todo_log, paused, started, unique_id } = props;
+        
+    const time_display = (() => {
+      if(!linked_todo_log) { return ''; }
+      const start_ts = new Date(started+'Z'); // 
+      const now_ts = (paused !== null && paused !== undefined) ? new Date(paused+'Z') : Date.now();
+      let [hr,m,s] = get_hr_min_sec((now_ts-start_ts)/1000);
+      if(m < 10) { m = `0${m}`; }
+      if(s < 10) { s = `0${s}`; }
+      return `${hr}:${m}:${s}`;
     })();
+    
+
+    
+    useEffect(() => {
+      const interval_func_id = setInterval(increment, 1000);
+      return () => {
+	clearInterval(interval_func_id);
+      }
+    }, []);
+    
+    
+    if (linked_todo_log) {
+
+
+      const pause_or_resume_func = (paused !== null) ? props.resume_timer : props.pause_timer;
+      const pause_text = (paused !== null) ? 'Resume' : 'Pause'; 
+      const pause_html = html`
+        <div class="col-md-1">
+          <input type="button" value="${pause_text}"
+                 onClick=${() => pause_or_resume_func(linked_todo_log.unique_id)} />
+        </div>`;
+
+    
+      
+      
+    const res = html`
+        <div id="timer">
+          <div class="row" style="margin-bottom: 20px; margin-top: 20px;" id="inner-timer">
+            <div class="col-md-5 col-xs-7">
+              <h4 style="margin-bottom: 0px; margin-top: 3px;">
+                <span>Current Timer - ${linked_todo_log.description} - ${time_display}</span>
+              </h4>
+            </div>
+  
+            ${pause_html}
+
+            <div class="col-md-1 col-xs-2">
+              <input type="button" value="Stop" onClick=${() => props.stop_timer(linked_todo_log.unique_id)}/>
+            </div>
+          </div>
+        </div>`;
+      return res;
+    } else {
+      return html`<div id="timer"></div>`;
+    }
+  }
+  
+
+  function Stats(props) {
+    const { streak, percent_tasks, percent_time, num_total_days,
+	    completed_time, completed_week_time, completed_month_time,
+	    avg_week_time, avg_month_time, avg_total_time, total_time,
+	    tags, week_plot, month_plot } = props;
+    const streak_html = (streak >= 2) ? html`<h4>Streak: ${streak} days!</h4>` : (streak == 1) ? html`<h4>Streak: 1 day</h4>` : html`<h4>Streak: 0 days :(</h4>`;
+
+    if (streak === undefined || streak === null) {
+      return html``;
+    }
+    const time_html = html`    
+      <div>
+        <span style="font-weight:bold;">${percent_tasks}% of tasks complete.</span>
+      </div>
+      <div>
+        <span style="font-weight:bold;">${percent_time} of time complete.</span>
+      </div>
+      <div>
+        <span style="font-weight:bold;">This day's time:</span> ${completed_time[0]}hr${completed_time[1]}m
+      </div>
+      <div>
+        <span style="font-weight:bold;">Last 7 day's time:</span> ${completed_week_time[0]}hr${completed_week_time[1]}m <span style="font-weight:bold;">Avg:</span> ${avg_week_time[0]}hr${avg_week_time[1]}m
+      </div>
+      <div>
+        <span style="font-weight:bold;">Last month's time:</span> ${completed_month_time[0]}hr${completed_month_time[1]}m <span style="font-weight:bold;">Avg:</span> ${avg_month_time[0]}hr${avg_month_time[1]}m
+      </div>
+      <div>
+        <span style="font-weight:bold;">Total time:</span> ${total_time[0]}hr${total_time[1]}m <span style="font-weight:bold;">Avg:</span> ${avg_total_time[0]}hr${avg_total_time[1]}m <span style="font-weight: bold;">Total days:</span> ${num_total_days}
+      </div>`;
+
+
+    const inner_tags_html = tags.map((tagset) => {
+      const [ tagset_name, inner_tags ] = tagset;
+      const inner = inner_tags.map((t) => {
+	const [count, name, [ hr, m ] ] = t;
+	return html`<li>${name} ${count}(s), ${hr}hr${m}m</li>`;
+      });
+      return html`<div class="col-md-6"><h3>${tagset_name}</h3><ul>${inner}</ul></div>`;
+    });
+
+    const tags_html = html`<div class="row">${inner_tags_html}</div>`;
+    
+
+    const charts_html = html`
+      <div class="row">
+        <div class="col-md-6">
+          <img src="data:image/svg+xml,${week_plot}" style="width: 100%;"></img>
+        </div>
+        <div class="col-md-6">
+          <img src="data:image/svg+xml,${month_plot}" style="width: 100%;"></img>
+        </div>  
+      </div>
+    `;
+    
+    return html`
+        ${streak_html}
+        ${time_html}
+        ${tags_html}
+        ${charts_html}
+      `;
+  }
+  
+
+  
+  function TodoList(props) {
+    //const [todos, setTodos] = useState(props.todos); //props.todos);
+    
+    const { todos, has_active_timer, start_timer, update_todo, delete_todo} = props;
+    
+    const inner_todo_html = todos.map(function(todo) {
+      const res = html`
+        <div class="row form-group" style="margin-bottom: 16px;">
+          <${TodoLog} ...${todo} has_active_timer=${has_active_timer} start_timer=${start_timer} update_todo=${update_todo} delete_todo=${delete_todo}></div>
+        </div>`;
+      return res;
+    });
+    
+    const res = html`<div id="todo-logs">${inner_todo_html}</div>`;
+    return res;
+  }
+  
+  
+  const TodoLog = function(props) {
+    
+    const { has_active_timer, unique_id, start_timer, delete_todo } = props;
+        
+    
+    let timer = html`<div class="col-md-2 col-xs-5"></div>`;
+    if (!has_active_timer) {
+      timer = html`
+        <div class="col-md-2 col-xs-5">
+          <div class="row">
+            <div class="col-md-9 col-xs-12">
+	      <input type="submit" value="Start Timer" style="width:100%;" onClick=${() => start_timer(unique_id)}/>
+            </div>
+          </div>
+        </div>`;
+    }
+    
+    const res = html`<div>
+      <div class="col-md-9 col-xs-12">
+        <${TodoLogForm} ...${props}/>
+      </div>
+
+      <div class="col-md-1 col-xs-6 xs-offset-1">
+        <div class="row">
+          <div class="col-xs-8 col-md-0"></div>
+          <div class="col-md-12 col-xs-4">
+	    <input type="submit" style="width: 100%;" value="Delete" onClick=${()=>delete_todo(unique_id)}/>
+          </div>
+        </div>
+      </div>
+      ${timer}
+    </div>`;
+    // todo include timer
+    
+    return res;
+  };
+
+  
+  function TodoLogForm(props) {
+    
+
+    const [dirty, set_dirty] = useState(false);
+    
+    //const { description, completion, duration, tag, date, unique_id } = props;
+    const { unique_id, date } = props; 
+    const [description, set_description] = useState(props.description);
+    const [completion, set_completion] = useState(props.completion);
+    const [duration, set_duration]   = useState(props.duration);
+    const [tag, set_tag]   = useState(props.tag);
+
+    const completion_class = completion ? 'text-decoration: line-through;' : '';
+    
+    if(!dirty) {
+      set_description(props.description);
+      set_completion(props.completion);
+      set_duration(props.duration);
+      set_tag(props.tag);
+    }
+
+    if(description === props.description &&
+       completion === props.completion &&
+       duration === props.duration &&
+       tag === props.tag) {
+      set_dirty(false);
+    }
+    
+    const mark_dirty = function(e, set_func) {
+      const type = e.target.type;
+      const val = (type === "number") ? e.target.valueAsNumber : (type === "checkbox") ? e.target.checked : e.target.value;
+      set_func(val);
+      set_dirty(true);
+    }
+    
+    const update = async function() {
+      const new_props = {
+	unique_id, date,
+	description, tag,
+	completion, duration
+      };
+      const res = await props.update_todo(new_props);
+      if(res) {
+	set_dirty(false);
+      }
+    }
+    
+    const changeDuration = (e) => { mark_dirty(e, set_duration); }
+    const changeDescription = (e) => { mark_dirty(e, set_description); }
+    const changeCompletion = (e) => { mark_dirty(e, set_completion); }
+    const changeTag = (e) => { mark_dirty(e, set_tag); }
+    
+    
+    const update_html = (
+      dirty  ?
+	html`
+        <div class="col-md-2 col-xs-5">
+          <input type="submit" value="Update" onClick=${update} style="width: 100%;" class="submit-btn-custom-width"/>
+       </div>`
+	:
+	html`<div class="col-md-2 col-xs-5"></div>`);
+    
+    return html`<div class="row">
+        <div class="col-md-1 col-xs-1">
+          <input type="checkbox" checked=${completion} onChange=${changeCompletion} />
+        </div>
+  
+        <div class="col-md-4 col-xs-6" style="font-weight:bold;">
+          <input type="text" value="${description}" onChange=${changeDescription}
+	     maxlength="1024" style="width: 100%; ${completion_class}"/>
+        </div>
+  
+        <div class="col-md-2 col-xs-5">
+          <input class="duration-custom-width" type="number"
+	         value="${duration}" onChange=${changeDuration}
+	         style="${completion_class}"/>
+        </div>
+  
+        <div class="col-md-3 col-xs-6 xs-offset-1">
+          <input type="text" class="tag-custom-width"
+	         value="${tag}" maxlength="128" onChange=${changeTag}
+	         style="${completion_class}"/>
+        </div>
+        
+        ${update_html}
+  
+     </div>
+     `;
+  }
   </script>
 
 
