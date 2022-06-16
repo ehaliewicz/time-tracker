@@ -143,7 +143,6 @@ def get_timer(request):
 @login_required
 @serialized_endpoint(ActiveTimerSerializer)
 def start_timer(request, log_id):
-    time.sleep(10)
     timer = ActiveTimer(user_id=request.user.id, linked_todo_log_id=log_id)
     timer.save()
     return timer
@@ -165,7 +164,6 @@ def pause_timer(request, log_id):
 @login_required
 @serialized_endpoint(ActiveTimerSerializer)
 def resume_timer(request, log_id):
-    #time.sleep(10)
     t = ActiveTimer.objects.filter(user_id=request.user.id, linked_todo_log_id=log_id).get()
     paused_d = pytz.utc.localize(t.paused)
     now_d = datetime.datetime.now(datetime.timezone.utc)
