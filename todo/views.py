@@ -154,27 +154,6 @@ def update_todo_log(request, log_id):
     return redirect(request.META.get('HTTP_REFERER'))
 
 
-
-@login_required
-@csrf_protect
-def update_todo_log_partial(request, log_id):
-    form = TodoLogForm(request.POST)
-    if form.is_valid():
-        form.instance.unique_id = log_id
-        form.instance.user_id = request.user.id
-        form.instance.save()
-    else:
-        raise Exception("Error(s) updating todo log {}".format(form.errors))
-
-    update_stats(request.user.id, form.instance.date)
-
-    return render(
-        request,
-        "todo_log_form.html",
-        {"todo": TodoLogForm(instance=form.instance)},
-    )
-
-
 @csrf_protect
 @login_required
 def update_todo_item(request, item_id):
@@ -203,27 +182,6 @@ def new_todo_log(request):
     
     return redirect(request.META.get('HTTP_REFERER'))
 
-@csrf_protect
-@login_required
-def new_todo_log_partial(request):
-    form = TodoLogForm(request.POST)
-    if form.is_valid():
-        form.instance.user_id = request.user.id
-        form.instance.save()
-    else:
-        raise Exception("Error(s) creating todo log {}".format(form.errors))
-    
-
-    update_stats(request.user.id, form.instance.date)
-
-    
-    new_log = TodoLog(user_id=request.user.id, date=form.instance.date)
-    form = TodoLogForm(instance=new_log)
-    return render(request,
-                  "new_todo_log_form.html",
-                  {'form': form}
-                )
-
 
 @csrf_protect
 @login_required
@@ -247,16 +205,6 @@ def delete_todo_log(request, log_id):
     update_stats(request.user.id, todo_log.date)
     
     return redirect(request.META.get('HTTP_REFERER'))
-
-@csrf_protect
-@login_required
-def delete_todo_log_partial(request, log_id):
-    todo_log = TodoLog.objects.get(user_id=request.user.id,unique_id=log_id)
-    todo_log.delete()
-
-    update_stats(request.user.id, todo_log.date)
-    
-    return HttpResponse(status=200)
 
 @csrf_protect
 @login_required
@@ -295,44 +243,6 @@ def todays_todos(request):
     
     return inner_date_todo_logs(request, date, fmt_date, "day_todo_list.html")
 
-@login_required
-@csrf_protect
-def todo_logs_for_day_partial(request, date):
-    parsed_date = dateutil.parser.parse(date)
-    todo_logs_for_today = todo_logs.get_logs_for_date(request.user.id, date, sort_by='unique_id')
-
-    
-    timer = ActiveTimer.objects.filter(user_id=request.user.id).first()
-    
-    return render(request, 'todo_logs.html',
-                  {
-                      "todo_logs": [TodoLogForm(instance=todo_log) for todo_log in todo_logs_for_today],
-                      "active_timer": timer
-                  })
-
-
-@login_required
-@csrf_protect
-def stats_for_day_partial(request, date):
-    parsed_date = dateutil.parser.parse(date)
-    calced_stats = get_or_cache_stats(request.user.id, parsed_date)
-    return render(
-        request,
-        "stats.html",
-        calced_stats
-    )
-
-@login_required
-@csrf_protect
-def get_todo_log_partial(request, log_id):
-    log = TodoLog.objects.get(user_id=request.user.id, unique_id=log_id)
-    timer = ActiveTimer.objects.filter(user_id=request.user.id, linked_todo_log_id=log_id).first()
-    return render(
-        request,
-        "todo_log.html",
-        {'todo': TodoLogForm(instance=log), "active_timer": timer}
-    )
-
 
 @login_required
 @csrf_protect
@@ -370,16 +280,6 @@ def list_todo_logs_for_tag(request, tag):
                 "todo_logs": [TodoLogForm(instance=log) for log in q]
             })
 
-@csrf_protect
-@login_required
-def get_timer_partial(request):
-    timers = ActiveTimer.objects.filter(user_id=request.user.id)
-    active_timer = timers[0]
-    return render(request, "timer.html",
-                  {
-                      "active_timer": active_timer
-                  })
-
 
 @csrf_protect
 @login_required
@@ -389,25 +289,11 @@ def start_timer(request, log_id):
 
 @csrf_protect
 @login_required
-def start_timer_partial(request, log_id):
-    ActiveTimer(user_id=request.user.id, linked_todo_log_id=log_id).save()
-    return HttpResponse(status=200)
-
-@csrf_protect
-@login_required
 def pause_timer(request, log_id):
     t = ActiveTimer.objects.filter(user_id=request.user.id, linked_todo_log_id=log_id).get()
     t.paused = datetime.datetime.now(datetime.timezone.utc)
     t.save()
     return redirect(request.META.get('HTTP_REFERER'))
-
-@csrf_protect
-@login_required
-def pause_timer_partial(request, log_id):
-    t = ActiveTimer.objects.filter(user_id=request.user.id, linked_todo_log_id=log_id).get()
-    t.paused = datetime.datetime.now(datetime.timezone.utc)
-    t.save()
-    return HttpResponse(status=200)
 
 
 
@@ -430,12 +316,6 @@ def resume_timer_inner(request, log_id):
 def resume_timer(request, log_id):
     resume_timer_inner(request, log_id)
     return redirect(request.META.get('HTTP_REFERER'))
-
-@csrf_protect
-@login_required
-def resume_timer_partial(request, log_id):
-    resume_timer_inner(request, log_id)
-    return HttpResponse(status=200)
 
     
 def stop_timer_inner(request, log_id):
@@ -466,13 +346,6 @@ def stop_timer_inner(request, log_id):
 def stop_timer(request, log_id):
     stop_timer_inner(request, log_id)
     return redirect(request.META.get('HTTP_REFERER'))
-
-@csrf_protect
-@login_required
-def stop_timer_partial(request, log_id):
-    stop_timer_inner(request, log_id)
-    return HttpResponse(status=200)
-    
     
 
 def register(request):
