@@ -391,7 +391,7 @@
       const pause_or_resume_func = (paused !== null) ? props.resume_timer : props.pause_timer;
       const pause_text = (paused !== null) ? 'Resume' : 'Pause'; 
       const pause_html = html`
-        <div class="col-md-1">
+        <div class="col-md-1 col-xs-2">
           <input type="button" value="${pause_text}"
                  onClick=${() => pause_or_resume_func(linked_todo_log.unique_id)} />
         </div>`;
