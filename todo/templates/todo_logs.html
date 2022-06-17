@@ -1,9 +1,0 @@
-
-{% for todo in todo_logs %}
-<div class="row form-group" style="margin-bottom: 15px;"
-     id="todo-{{todo.instance.unique_id}}-row"
-     data-refresh-url="/get_todo_log/{{todo.instance.unique_id}}">
-  {% include "todo_log.html" %}
-  
-</div>
-{% endfor %}
