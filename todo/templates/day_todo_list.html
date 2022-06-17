@@ -38,6 +38,18 @@
   .xs-offset-1 {
     margin-left: 8.33333333%;
   }
+
+  .group-border {
+    border: 1px solid gray;
+    padding: 10px;
+    border-radius: 2px;
+  }
+  
+  .group-border-more-padding {
+    border: 1px solid gray;
+    padding: 15px;
+    border-radius: 2px;
+  }
   
 </style>
 
@@ -336,13 +348,15 @@
     }
 
     return html`
-      <h3>New Todo Log Entry (for this date only): </h3>
-      <label>Completion: </label> <input type="checkbox" value=${comp} onChange=${(e)=>set_comp(e.target.checked)}/><span> </span>
-      <label>Description: </label> <input type="text" value=${desc} maxlength="1024" onChange=${(e)=>set_desc(e.target.value)} required=""/><span> </span> 
-      <label>Duration: </label> <input type="number" required="" value=${dur} onChange=${(e)=>set_dur(e.target.valueAsNumber)}/>m<span> </span>
-      <label>Tag: </label> %<input maxlength="128" type="text" value=${tag} onChange=${(e)=>set_tag(e.target.value)}/><span> </span>
-      <input type="submit" value="Add Todo Log" onClick=${submit_todo_log_form}/>
-    `;
+      <div class="row group-border" style="margin-top: 15px; margin-bottom: 15px;">
+        <h3>New Todo Log Entry (for this date only): </h3>
+        <label>Completion: </label> <input type="checkbox" value=${comp} onChange=${(e)=>set_comp(e.target.checked)}/><span> </span>
+        <label>Description: </label> <input type="text" value=${desc} maxlength="1024" onChange=${(e)=>set_desc(e.target.value)} required=""/><span> </span> 
+        <label>Duration: </label> <input type="number" required="" value=${dur} onChange=${(e)=>set_dur(e.target.valueAsNumber)}/>m<span> </span>
+        <label>Tag: </label> %<input maxlength="128" type="text" value=${tag} onChange=${(e)=>set_tag(e.target.value)}/><span> </span>
+        <input type="submit" value="Add Todo Log" onClick=${submit_todo_log_form}/>
+     </div>
+     `;
 
   }
 
@@ -389,19 +403,17 @@
       
       
     const res = html`
-        <div id="timer">
-          <div class="row" style="margin-bottom: 20px; margin-top: 20px;" id="inner-timer">
-            <div class="col-md-5 col-xs-7">
-              <h4 style="margin-bottom: 0px; margin-top: 3px;">
-                <span>Current Timer - ${linked_todo_log.description} - ${time_display}</span>
-              </h4>
-            </div>
+        <div id="timer" class="row group-border" style="margin-top: 15px; margin-bottom: 15px; background-color: darkgray;">
+          <div class="col-md-5 col-xs-7">
+            <h4 style="margin-bottom: 0px; margin-top: 3px;">
+              <span>Current Timer - ${linked_todo_log.description} - ${time_display}</span>
+            </h4>
+          </div>
   
-            ${pause_html}
+          ${pause_html}
 
-            <div class="col-md-1 col-xs-2">
-              <input type="button" value="Stop" onClick=${() => props.stop_timer(linked_todo_log.unique_id)}/>
-            </div>
+          <div class="col-md-1 col-xs-2">
+            <input type="button" value="Stop" onClick=${() => props.stop_timer(linked_todo_log.unique_id)}/>
           </div>
         </div>`;
       return res;
@@ -466,10 +478,12 @@
     `;
     
     return html`
+      <div class="row group-border-more-padding" style="background-color: darkgray;">
         ${streak_html}
         ${time_html}
         ${tags_html}
         ${charts_html}
+     </div>
       `;
   }
   
@@ -488,7 +502,7 @@
       return res;
     });
     
-    const res = html`<div id="todo-logs">${inner_todo_html}</div>`;
+    const res = html`<div id="todo-logs" class="row group-border">${inner_todo_html}</div>`;
     return res;
   }
   
