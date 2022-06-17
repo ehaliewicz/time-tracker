@@ -139,20 +139,6 @@ def todo_list_or_defaults(user_id):
     all_todo_items = TodoItem.objects.filter(user_id=user_id)
     return all_todo_items
 
-@login_required
-def update_todo_log(request, log_id):
-    form = TodoLogForm(request.POST)
-    if form.is_valid():
-        form.instance.unique_id = log_id
-        form.instance.user_id = request.user.id
-        form.instance.save()
-    else:
-        raise Exception("Error(s) updating todo log {}".format(form.errors))
-
-    update_stats(request.user.id, form.instance.date)
-    
-    return redirect(request.META.get('HTTP_REFERER'))
-
 
 @csrf_protect
 @login_required
@@ -169,22 +155,6 @@ def update_todo_item(request, item_id):
 
 @csrf_protect
 @login_required
-def new_todo_log(request):
-    form = TodoLogForm(request.POST)
-    if form.is_valid():
-        form.instance.user_id = request.user.id
-        form.instance.save()
-    else:
-        raise Exception("Error(s) creating todo log {}".format(form.errors))
-    
-
-    update_stats(request.user.id, form.instance.date)
-    
-    return redirect(request.META.get('HTTP_REFERER'))
-
-
-@csrf_protect
-@login_required
 def new_todo_item(request):
     form = TodoItemForm(request.POST)
     if form.is_valid():
@@ -195,16 +165,6 @@ def new_todo_item(request):
     
     return redirect(request.META.get('HTTP_REFERER'))
 
-
-@csrf_protect
-@login_required
-def delete_todo_log(request, log_id):
-    todo_log = TodoLog.objects.get(user_id=request.user.id,unique_id=log_id)
-    todo_log.delete()
-
-    update_stats(request.user.id, todo_log.date)
-    
-    return redirect(request.META.get('HTTP_REFERER'))
 
 @csrf_protect
 @login_required
@@ -279,66 +239,6 @@ def list_todo_logs_for_tag(request, tag):
                 "tag": tag,
                 "todo_logs": [TodoLogForm(instance=log) for log in q]
             })
-
-
-@csrf_protect
-@login_required
-def start_timer(request, log_id):
-    ActiveTimer(user_id=request.user.id, linked_todo_log_id=log_id).save()
-    return redirect(request.META.get('HTTP_REFERER'))
-
-@csrf_protect
-@login_required
-def pause_timer(request, log_id):
-    t = ActiveTimer.objects.filter(user_id=request.user.id, linked_todo_log_id=log_id).get()
-    t.paused = datetime.datetime.now(datetime.timezone.utc)
-    t.save()
-    return redirect(request.META.get('HTTP_REFERER'))
-
-
-
-def resume_timer_inner(request, log_id):
-    t = ActiveTimer.objects.filter(user_id=request.user.id, linked_todo_log_id=log_id).get()
-    paused_d = pytz.utc.localize(t.paused)
-    now_d = datetime.datetime.now(datetime.timezone.utc)
-    
-    
-    paused_dt = now_d - paused_d # amount of time paused
-
-    t.paused = None
-    t.started += paused_dt # move start time forward by how long it was paused
-
-    t.save()
-
-    
-@csrf_protect
-@login_required
-def resume_timer(request, log_id):
-    resume_timer_inner(request, log_id)
-    return redirect(request.META.get('HTTP_REFERER'))
-
-    
-def stop_timer_inner(request, log_id):
-    t = ActiveTimer.objects.filter(user_id=request.user.id, linked_todo_log_id=log_id).get()
-
-    start_d = pytz.utc.localize(t.started)
-
-    if t.paused is not None:
-        end_d = pytz.utc.localize(t.paused)
-    else:
-        end_d = datetime.datetime.now(datetime.timezone.utc) 
-
-    duration = round((end_d - start_d).total_seconds()/60)
-
-    log = TodoLog.objects.filter(user_id=request.user.id, unique_id=log_id).get()
-
-    log.duration = duration
-    log.completion = True
-    t.delete()
-    log.save()
-
-    update_stats(request.user.id, log.date)
-    
 
 
 @csrf_protect
