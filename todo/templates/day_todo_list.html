@@ -45,10 +45,9 @@
 
 <script type="module">
 
-  import { h, render, } from 'https://cdn.skypack.dev/preact';
-  import { useState, useEffect, useMemo, useReducer } from 'https://cdn.skypack.dev/preact/hooks';
-  import htm from 'https://cdn.skypack.dev/htm';
-  //import { debounce, throttle } from 'https://cdn.skypack.dev/lodash';
+  import { h, render, } from 'https://cdn.skypack.dev/preact@10.8.1';
+  import { useState, useEffect, useMemo, useReducer } from 'https://cdn.skypack.dev/preact@10.8.1/hooks';
+  import htm from 'https://cdn.skypack.dev/htm@v3.1.1';
 
   const html = htm.bind(h);
   
@@ -58,10 +57,6 @@
   
   function get_hr_min_sec(seconds) {
 
-    // say seconds is 365
-
-    // mins = 60
-    
     const mins = seconds/60;
     const rem_secs = seconds%60
     
@@ -96,15 +91,9 @@
   }  
 
   
-  //const resp = await fetch(`/api/todo_logs_for_day/${date}`);
-  //const todos = await resp.json();
-  //const todo_logs_area = document.getElementById("todo-logs");
-
   const inner_body = document.getElementById("inner-body");
   render(html`<${DayTodoListPage}/>`, inner_body);
-  
-  //render(html`<${App} name="World" />`, document.body);
-  
+    
   function DayTodoListPage() {
 
     const [timer, set_timer] = useState({});
