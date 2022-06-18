@@ -269,7 +269,7 @@
       const now = Date.now();
       const now_minus_paused_ms = now - parsed_paused;
 
-      const adjusted_started = started + now_minus_paused_ms;
+      const adjusted_started = parsed_started + now_minus_paused_ms;
       const adjusted_started_str = adjusted_started.toISOString();
 
       // make a fake timer before the response from the server comes back
