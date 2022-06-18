@@ -256,16 +256,36 @@
     
     const resume_timer = async function(id) {
       const old_timer = timer;
-      const fake_timer = {...old_timer, paused: null};
+
+      // resuming a timer, so we want to adjust the start time
+      // by the amount of time that has passed since we paused
+      // such that now-start_time is the correct amount of unpaused time
+
+      //  in code: start_time += (now - paused);
+      const started = old_timer['started'];
+      const parsed_started = new Date(started+'Z');
+      const paused = old_timer['paused'];
+      const parsed_paused = new Date(paused+'Z');
+      const now = Date.now();
+      const now_minus_paused_ms = now - parsed_paused;
+
+      const adjusted_started = started + now_minus_paused_ms;
+      const adjusted_started_str = adjusted_started.toISOString();
+
+      // make a fake timer before the response from the server comes back
+      // so we can pretend it resumes the timer immediately
+      const fake_timer = {
+        ...old_timer, 
+        started: adjusted_started_str.slice(0, adjusted_started_str.length-1),
+        paused: null
+      };
       set_timer(fake_timer);
-      const resp = await fetchReq(
-	`/api/resume_timer/${id}`,
-	{
-	  method: 'POST'
-	});
+      const resp = await fetchReq(`/api/resume_timer/${id}`, {
+	      method: 'POST'
+	    });
       if (resp.ok) {
-	const json = await resp.json();
-	set_timer(json);
+	      const json = await resp.json();
+	      set_timer(json);
       }
     }
     
