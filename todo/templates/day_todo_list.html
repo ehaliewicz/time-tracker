@@ -116,11 +116,11 @@
     const update_todo_in_list = function(todo_json, id) {
       
       const new_todo_list = todo_list.map((t) => {
-	if (t.unique_id === id) {
-	  return todo_json;
-	} else {
-	  return t;
-	}
+        if (t.unique_id === id) {
+          return todo_json;
+        } else {
+          return t;
+        }
       });
       set_todo_list(new_todo_list);
     }
@@ -136,13 +136,12 @@
     }
 
     const refresh_todo_log = async function(id) {
-      const resp = await fetchReq(
-	`/api/get_todo_log/${id}`,
-	{
-	  method: 'GET'
-	});
+      const resp = await fetchReq(`/api/get_todo_log/${id}`,
+	      {
+	        method: 'GET'
+	      });
       if(!resp.ok) {
-	return;
+        return;
       }
       const json = await resp.json();
       update_todo_in_list(json, id);
@@ -172,13 +171,11 @@
     
     const delete_todo = async function(unique_id) {
       const resp = await fetchReq(
-	`/api/delete_todo_log/${unique_id}`,
-	{
-	  method: 'POST',
-	}
-      );
+	      `/api/delete_todo_log/${unique_id}`, {
+	      method: 'POST',
+	    });
       if(!resp.ok) {
-	return;
+	      return;
       }
       remove_todo_from_list(unique_id);
       
@@ -211,44 +208,42 @@
 
       let desc = '';
       for(var i = 0; i < todo_list.length; i++) {
-	if(todo_list[i].unique_id === id) {
-	  desc = todo_list[i].description;
-	  break;
-	}
+        if(todo_list[i].unique_id === id) {
+          desc = todo_list[i].description;
+          break;
+        }
       }
       set_timer({
-	'linked_todo_log': {
-	  'description': desc
-	},
-	'paused': null,
-	'started': ds.slice(0, ds.length-1)	
+	      'linked_todo_log': {
+          'description': desc
+        },
+        'paused': null,
+        'started': ds.slice(0, ds.length-1)	
       });
-      const resp = await fetchReq(
-	`/api/start_timer/${id}`,
-	{
-	  method: 'POST'
-	});
+      const resp = await fetchReq(`/api/start_timer/${id}`,
+      {
+        method: 'POST'
+      });
       if(!resp.ok) {
-	set_timer({});
+	      set_timer({});
       } else {
-	const json = await resp.json();
-	set_timer(json);
+        const json = await resp.json();
+        set_timer(json);
       }
     }
     
     const stop_timer = async function(id) {
       const old_timer = timer;
       set_timer({});
-      const resp = await fetchReq(
-	`/api/stop_timer/${id}`,
-	{
-	  method: 'POST'
-	});
+      const resp = await fetchReq(`/api/stop_timer/${id}`,
+      {
+        method: 'POST'
+      });
       const p2 = fetch_stats;
       const p3 = refresh_todo_log(id);
       
       if (!resp.ok) {
-	set_timer(old_timer);
+	      set_timer(old_timer);
       }
       await p2;
       await p3;
@@ -295,14 +290,13 @@
       const ds = now_dt.toISOString();
       const fake_timer = {...old_timer, paused: ds.slice(0, ds.length-1)};
       set_timer(fake_timer);
-      const resp = await fetchReq(
-	`/api/pause_timer/${id}`,
-	{
-	  method: 'POST'
-	});
+      const resp = await fetchReq(`/api/pause_timer/${id}`,
+      {
+        method: 'POST'
+      });
       if (resp.ok) {
-	const json = await resp.json();
-	set_timer(json);
+      const json = await resp.json();
+      set_timer(json);
       }
     }
 
@@ -310,23 +304,44 @@
       const resp = await fetch(`/api/stats_for_day/${date}`);
       if(resp.ok) {
         const stats = await resp.json();
-	set_stats(stats);
+	      set_stats(stats);
       }
     }
 
+    const fetch_todos = async function() {
+
+      const todos_fetch = await fetch(`/api/todo_logs_for_day/${date}`);
+      if (todos_fetch.ok) {
+        const todos = await todos_fetch.json();
+        set_todo_list(todos);
+      }
+    }
+    const fetch_timer = async function() {
+      
+      const timer_fetch = await fetch('/api/get_timer');
+      if(timer_fetch.ok) {
+        const timer_json = await timer_fetch.json();
+        set_timer(timer_json);
+      }
+    }
     
     useEffect(async () => {
       
-      const todos_fetch = await fetch(`/api/todo_logs_for_day/${date}`);
-      const todos = await todos_fetch.json();
-      set_todo_list(todos);
-
-      const timer_fetch = await fetch('/api/get_timer');
-      const timer_json = await timer_fetch.json();
-      set_timer(timer_json);
-
-      await fetch_stats();
+      const p1 = fetch_timer(); 
+      const p2 = fetch_todos();
+      const p3 = fetch_stats();
       
+      await p1;
+      await p2;
+      await p3;
+      const interval_id = setInterval(() => {
+        fetch_timer();
+        fetch_todos();
+        fetch_stats();
+      }, 1000);
+      return () => {
+        clearInterval(interval_id);
+      }
 
     }, []);
     
