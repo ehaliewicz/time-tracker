@@ -105,62 +105,65 @@
   
   const inner_body = document.getElementById("inner-body");
   render(html`<${DayTodoListPage}/>`, inner_body);
+
+  
+  // compare two todos with the same id,
+  // return true if they have a difference that could change the statistics display
+  // otherwise return false
+  const todos_have_difference = function(todos_a, todos_b) {
+    if(todos_a === undefined && todos_b !== undefined) {
+      return true;
+    }
+    if(todos_a !== undefined && todos_b === undefined) {
+      return true;
+    }
+    if (todos_a.completion !== todos_b.completion) {
+      return true;
+    }
+    if(todos_a.duration !== todos_b.duration) {
+      return true;
+    }
+    if (todos_a.tag !== todos_b.tag) {
+      return true;
+    }
+    return false;
+  }
+  
+  const todo_lists_have_difference = function(todos_a, todos_b) {
+    const completed_a_map = new Map();
+    const completed_b_map = new Map();
+    for(var i = 0; i < todos_a.length; i++) {
+      if(todos_a[i].completion) {
+	completed_a_map.set(todos_a[i].unique_id, todos_a[i]);
+      }
+    }
+    
+    for(var i = 0; i < todos_b.length; i++) {
+      if(todos_b[i].completion) {
+	completed_b_map.set(todos_b[i].unique_id, todos_b[i]);
+      }
+    }
+
+    if(completed_a_map.size !== completed_b_map.size) {
+      return true;
+    }
+    
+
+    for (const [unique_id, completed_a_todo] of completed_a_map) {
+      // could be undefined, which is handled in todos_have_difference
+      const completed_b_todo = completed_b_map.get(unique_id);
+      if(todos_have_difference(completed_a_todo, completed_b_todo)) {
+	return true;
+      }
+    }
+    
+    return false;      
+  }
+  
     
   function DayTodoListPage() {
 
-    
-    // compare two todos with the same id,
-    // return true if they have a difference that could change the statistics display
-    // otherwise return false
-    const todos_have_difference = function(todos_a, todos_b) {
-      if(todos_a === undefined && todos_b !== undefined) {
-	return true;
-      }
-      if(todos_a !== undefined && todos_b === undefined) {
-	return true;
-      }
-      if (todos_a.completion !== todos_b.completion) {
-	return true;
-      }
-      if(todos_a.duration !== todos_b.duration) {
-	return true;
-      }
-      if (todos_a.tag !== todos_b.tag) {
-	return true;
-      }
-      return false;
-    }
-    
-    const todo_lists_have_difference = function(todos_a, todos_b) {
-      const completed_a_map = new Map();
-      const completed_b_map = new Map();
-      for(var i = 0; i < todos_a.length; i++) {
-	if(todos_a[i].completion) {
-	  completed_a_map.set(todos_a[i].unique_id, todos_a[i]);
-	}
-      }
-      
-      for(var i = 0; i < todos_b.length; i++) {
-	if(todos_b[i].completion) {
-	  completed_b_map.set(todos_b[i].unique_id, todos_b[i]);
-	}
-      }
-
-      if(completed_a_map.size !== completed_b_map.size) {
-	return true;
-      }
-
-      for (const [unique_id, completed_a_todo] of completed_a_map) {
-	// could be undefined, which is handled in todos_have_difference
-	const completed_b_todo = completed_b_map.get(unique_id);
-	if(todos_have_difference(completed_a_todo, completed_b_todo)) {
-	  return true;
-	}
-      }
-
-      return false;      
-    }
-
+  
     const update_todo_list_and_fetch_stats_if_necessary = function(old_todo_list, new_todo_list) {
       
       if(todo_lists_have_difference(old_todo_list, new_todo_list)) {
@@ -169,9 +172,6 @@
       // we always have to return the new list
       // but we only want to fetch stats if necessary
       return new_todo_list;
-
-      
-      
     }
     
     
@@ -396,15 +396,38 @@
       await p1;
       await p2;
     }
-     
+
+    let last_active_ts = Date.now();
+    const inactive_ms = 1000 * 60 * 1; // if no activity within 5 minutes, stop refreshing 
+    
+    const reset_timer  = function() {
+      last_active_ts = Date.now() 
+    }
     
     useEffect(async () => {
       await fetch_new_info();
-      const interval_id = setInterval(
-	fetch_new_info,
+
+      window.onmousemove = reset_timer;
+      window.onmousedown = reset_timer;
+      window.ontouchstart = reset_timer;
+      window.onclick = reset_timer;
+      window.onkeydown = reset_timer;
+      window.addEventListener('scroll', reset_timer, true);
+      
+      
+      const fetch_interval_id = setInterval(
+	async function() {
+	  const ms_since_last_activity = Date.now() - last_active_ts;
+	  if(ms_since_last_activity < inactive_ms) {
+	    //console.log("fetching");
+	    await fetch_new_info();
+	  } else {
+	    //console.log("inactive, not fetching");
+	  }
+	},
 	10000);
       return () => {
-        clearInterval(interval_id);
+        clearInterval(fetch_interval_id);
       }
     }, []);
     
@@ -419,8 +442,6 @@
         <${NewTodoLogForm} new_todo_log=${new_todo_log}/>
 
         <${Stats} ...${stats}/>
-
-        
       `;
     
   }
