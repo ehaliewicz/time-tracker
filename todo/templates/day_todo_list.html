@@ -130,18 +130,28 @@
   }
   
   const todo_lists_have_difference = function(todos_a, todos_b) {
+    if(todos_a.length !== todos_b.length) {
+      return;
+    }
+    var sum_a = 0;
+    var sum_b = 0;
+
     const completed_a_map = new Map();
     const completed_b_map = new Map();
     for(var i = 0; i < todos_a.length; i++) {
+      sum_a += todos_a[i].duration;
+      sum_b += todos_b[i].duration;
       if(todos_a[i].completion) {
-	completed_a_map.set(todos_a[i].unique_id, todos_a[i]);
+	      completed_a_map.set(todos_a[i].unique_id, todos_a[i]);
+      }
+
+      if(todos_b[i].completion) {
+	      completed_b_map.set(todos_b[i].unique_id, todos_b[i]);
       }
     }
-    
-    for(var i = 0; i < todos_b.length; i++) {
-      if(todos_b[i].completion) {
-	completed_b_map.set(todos_b[i].unique_id, todos_b[i]);
-      }
+
+    if(sum_a !== sum_b) { 
+      return true;
     }
 
     if(completed_a_map.size !== completed_b_map.size) {
