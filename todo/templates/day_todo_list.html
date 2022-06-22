@@ -435,7 +435,7 @@
 	    //console.log("inactive, not fetching");
 	  }
 	},
-	10000);
+	1000 * 60);
       return () => {
         clearInterval(fetch_interval_id);
       }
