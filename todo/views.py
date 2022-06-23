@@ -127,9 +127,14 @@ def import_logs_for_date(request):
         else:
             raise Exception("Error importing log file {}".format(form.errors))
     else:
+
+        tz_name = request.session['tz_name']
+        date = datetime.datetime.now(pytz.timezone(tz_name))
+        fmt_date = "{}-{}-{}".format(date.year, date.month, date.day) 
         form = ImportLogsForm()
         return render(request, "import_logs.html", {
             "form": form,
+            "date": fmt_date,
         })
             
     pass
@@ -217,11 +222,16 @@ def date_todos(request, date):
 def todo_list(request):
     form = TodoItemForm()
     all_todo_items = TodoItem.objects.filter(user_id=request.user.id)
+
+    tz_name = request.session['tz_name']
+    date = datetime.datetime.now(pytz.timezone(tz_name))
+    fmt_date = "{}-{}-{}".format(date.year, date.month, date.day) 
     
     return render(request, "todo_list.html", 
                 {
                     "todo_items": [TodoItemForm(instance=todo_item) for todo_item in all_todo_items],
-                    "form": form
+                    "form": form,
+                    "date": fmt_date,
                 }
             )
 
@@ -234,10 +244,15 @@ def redirect_to_today(request):
 @login_required
 def list_todo_logs_for_tag(request, tag):
     q = TodoLog.objects.filter(user_id=request.user.id,tag=tag)
+
+    tz_name = request.session['tz_name']
+    date = datetime.datetime.now(pytz.timezone(tz_name))
+    fmt_date = "{}-{}-{}".format(date.year, date.month, date.day) 
     return render(request, "todo_logs_by_tag.html",
             {
                 "tag": tag,
-                "todo_logs": [TodoLogForm(instance=log) for log in q]
+                "todo_logs": [TodoLogForm(instance=log) for log in q],
+                "date": fmt_date,
             })
 
 
