@@ -62,7 +62,7 @@ urlpatterns = [
     path("api/stats_for_day/<str:date>", todo.api.stats_for_day, name="api stats"),
     path("api/todo_logs_for_day/<str:date>", todo.api.todo_logs_for_day, name="api logs for day"),
     
-    path("api/get_timer", todo.api.get_timer, name="api get timer"),
+    path("api/get_timer/<str:date>", todo.api.get_timer, name="api get timer"),
     path("api/start_timer/<int:log_id>", todo.api.start_timer, name="api start timer for log"),
     path("api/pause_timer/<int:log_id>", todo.api.pause_timer, name="api pause timer for log"),
     path("api/resume_timer/<int:log_id>", todo.api.resume_timer, name="resume timer for log"),

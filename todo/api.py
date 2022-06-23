@@ -130,12 +130,15 @@ def stats_for_day(request, date):
 @csrf_protect
 @ensure_csrf_cookie
 @login_required
-def get_timer(request):
-    timers = ActiveTimer.objects.filter(user_id=request.user.id)
+def get_timer(request, date):
+    parsed_date = dateutil.parser.parse(date)
+    timers = ActiveTimer.objects.filter(user_id=request.user.id, linked_todo_log__date=parsed_date)
     if len(timers) == 0:
         return JsonResponse({})
     else:
-        return JsonResponse(ActiveTimerSerializer(timers[0]).data)
+        assert len(timers) == 1
+        timer = timers[0]
+        return JsonResponse(ActiveTimerSerializer(timer).data)
 
 
 @csrf_protect

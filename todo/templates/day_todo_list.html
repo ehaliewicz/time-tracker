@@ -392,7 +392,7 @@
     
     const fetch_timer = async function() {
       
-      const timer_fetch = await fetch('/api/get_timer');
+      const timer_fetch = await fetch(`/api/get_timer/${date}`);
       if(timer_fetch.ok) {
         const timer_json = await timer_fetch.json();
         set_timer(timer_json);
