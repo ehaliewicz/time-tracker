@@ -457,17 +457,13 @@
   }
 
   function NewTodoLogForm(props) {
-    
+    const date = "{{date}}";
     const { new_todo_log } = props;
     const [desc, set_desc] = useState('');
     const [dur, set_dur] = useState(0);
     const [comp, set_comp] = useState(false);
     const [tag, set_tag] = useState('');
 
-    const toggle_comp = function (e) {
-      set_comp(!comp); 
-    }
-    
     const submit_todo_log_form = async function() {
       const res = await props.new_todo_log({
 	date, duration: dur, description: desc, tag: tag, completion: comp
@@ -483,7 +479,7 @@
     return html`
       <div class="row group-border" style="margin-top: 15px; margin-bottom: 15px;">
         <h3>New Todo Log Entry (for this date only): </h3>
-        <label>Completion: </label> <input type="checkbox" value=${comp} onClick=${toggle_comp}/><span> </span>
+        <label>Completion: </label> <input type="checkbox" value=${comp} onChange=${(e)=>set_comp(e.target.checked)}/><span> </span>
         <label>Description: </label> <input type="text" value=${desc} maxlength="1024" onChange=${(e)=>set_desc(e.target.value)} required=""/><span> </span> 
         <label>Duration: </label> <input type="number" required="" value=${dur} onChange=${(e)=>set_dur(e.target.valueAsNumber)}/>m<span> </span>
         <label>Tag: </label> %<input maxlength="128" type="text" value=${tag} onChange=${(e)=>set_tag(e.target.value)}/><span> </span>
@@ -679,20 +675,39 @@
 
   
   function TodoLogForm(props) {
+    
+
+    const [dirty, set_dirty] = useState(false);
+    
+    //const { description, completion, duration, tag, date, unique_id } = props;
     const { unique_id, date } = props; 
     const [description, set_description] = useState(props.description);
     const [completion, set_completion] = useState(props.completion);
     const [duration, set_duration]   = useState(props.duration);
     const [tag, set_tag]   = useState(props.tag);
-    
+
     const completion_class = completion ? 'text-decoration: line-through;' : '';
     
-    const changed = (
-      (description != props.description) ||
-	(completion != props.completion) ||
-	(duration != props.duration) ||
-	(tag != props.tag)
-    ); 
+    if(!dirty) {
+      set_description(props.description);
+      set_completion(props.completion);
+      set_duration(props.duration);
+      set_tag(props.tag);
+    }
+
+    if(description === props.description &&
+       completion === props.completion &&
+       duration === props.duration &&
+       tag === props.tag) {
+      set_dirty(false);
+    }
+    
+    const mark_dirty = function(e, set_func) {
+      const type = e.target.type;
+      const val = (type === "number") ? e.target.valueAsNumber : (type === "checkbox") ? e.target.checked : e.target.value;
+      set_func(val);
+      set_dirty(true);
+    }
     
     const update = async function() {
       const new_props = {
@@ -700,16 +715,20 @@
 	description, tag,
 	completion, duration
       };
-      await props.update_todo(new_props);
+      const res = await props.update_todo(new_props);
+      if(res) {
+	set_dirty(false);
+      }
     }
     
-    const changeDuration = (e) => { set_duration(e.target.valueAsNumber); }
-    const changeDescription = (e) => { set_description(e.target.value); }
-    const toggleCompletion = (e) => { set_completion(!completion); } 
-    const changeTag = (e) => { set_tag(e.target.value); }
-
+    const changeDuration = (e) => { mark_dirty(e, set_duration); }
+    const changeDescription = (e) => { mark_dirty(e, set_description); }
+    const changeCompletion = (e) => { mark_dirty(e, set_completion); }
+    const changeTag = (e) => { mark_dirty(e, set_tag); }
+    
+    
     const update_html = (
-      changed ?
+      dirty  ?
 	html`
         <div class="col-md-2 col-xs-5">
           <input type="submit" value="Update" onClick=${update} style="width: 100%;" class="submit-btn-custom-width"/>
@@ -719,7 +738,7 @@
     
     return html`<div class="row">
         <div class="col-md-1 col-xs-1">
-          <input type="checkbox" checked=${completion} onClick=${toggleCompletion} />
+          <input type="checkbox" checked=${completion} onChange=${changeCompletion} />
         </div>
   
         <div class="col-md-4 col-xs-6" style="font-weight:bold;">
