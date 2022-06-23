@@ -625,7 +625,7 @@
     
     const inner_todo_html = todos.map(function(todo) {
       const res = html`
-        <div class="row form-group" style="margin-bottom: 16px;">
+        <div key=${todo.unique_id} class="row form-group" style="margin-bottom: 16px;">
           <${TodoLog} ...${todo} has_active_timer=${has_active_timer} start_timer=${start_timer} update_todo=${update_todo} delete_todo=${delete_todo}></div>
         </div>`;
       return res;
