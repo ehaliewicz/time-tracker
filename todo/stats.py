@@ -141,8 +141,14 @@ def calculate_stats(user_id, date):
     time_for_today = todays_stats['time']
     if num_tasks_for_today != 0:
         pct_tasks = round((num_completed_tasks_for_today*100)/num_tasks_for_today, 2)
+    else:
+        pct_tasks = 100
+        
+    if time_for_today != 0:
         pct_time = round((completed_time_for_today*100)/time_for_today, 2)
-
+    else:
+        pct_time = 100
+        
 
     dates = (TodoLog.objects
              .filter(user_id=user_id, completion=True)
