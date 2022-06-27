@@ -67,5 +67,6 @@ urlpatterns = [
     path("api/pause_timer/<int:log_id>", todo.api.pause_timer, name="api pause timer for log"),
     path("api/resume_timer/<int:log_id>", todo.api.resume_timer, name="resume timer for log"),
     path("api/stop_timer/<int:log_id>", todo.api.stop_timer, name="api stop timer for log"),
+    path("api/delete_timer/<int:log_id>", todo.api.delete_timer, name="api elete timer for log"),
     
 ]

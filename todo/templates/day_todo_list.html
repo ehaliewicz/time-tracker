@@ -309,8 +309,7 @@
     const stop_timer = async function(id) {
       const old_timer = timer;
       set_timer({});
-      const resp = await fetchReq(`/api/stop_timer/${id}`,
-      {
+      const resp = await fetchReq(`/api/stop_timer/${id}`, {
         method: 'POST'
       });
       const p3 = refresh_todo_log(id);
@@ -319,6 +318,20 @@
 	      set_timer(old_timer);
       }
       await p3;
+    }
+
+    
+    const delete_timer = async function(id) {
+      const old_timer = timer;
+      set_timer({});
+
+      const resp = await fetchReq(`/api/delete_timer/${id}`, {
+	method: 'POST'
+      });
+            
+      if(!resp.ok) {
+	set_timer(old_timer);
+      }
     }
     
     const resume_timer = async function(id) {
@@ -371,6 +384,7 @@
       set_timer(json);
       }
     }
+
 
     const fetch_stats = async function() {
       const resp = await fetch(`/api/stats_for_day/${date}`);
@@ -446,7 +460,10 @@
     return html`
         <h2>${title}</h2>
         
-        <${Timer} ...${timer} pause_timer=${pause_timer} stop_timer=${stop_timer} resume_timer=${resume_timer}/>
+        <${Timer} ...${timer} 
+           pause_timer=${pause_timer} resume_timer=${resume_timer}
+           stop_timer=${stop_timer} delete_timer=${delete_timer} /> 
+           
         
         <${TodoList} todos=${todo_list} has_active_timer=${has_timer} start_timer=${start_timer} update_todo=${update_todo} delete_todo=${delete_todo}/>
         <${NewTodoLogForm} new_todo_log=${new_todo_log}/>
@@ -543,6 +560,9 @@
 
           <div class="col-md-1 col-xs-2">
             <input type="button" value="Stop" onClick=${() => props.stop_timer(linked_todo_log.unique_id)}/>
+          </div>
+          <div class="col-md-1 col-xs-2">
+            <input type="button" value="Delete" onClick=${() => props.delete_timer(linked_todo_log.unique_id)}/>
           </div>
         </div>`;
       return res;

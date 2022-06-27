@@ -10,7 +10,7 @@ import pytz
 import time
 
 import todo.todo_logs as todo_logs
-from .models import TodoLog, ActiveTimer, ActiveTimerSerializer, TodoLogSerializer
+from .models import TodoItem, TodoLog, ActiveTimer, ActiveTimerSerializer, TodoLogSerializer
 from .stats import get_or_cache_stats, update_stats
 from .forms import TodoLogForm
 
@@ -104,16 +104,37 @@ class ListSerializer(object):
         self.data = [self.item_serializer(i).data for i in lst]
         return self
 
+
+
+def todoItemToLog(user_id,item, date):
+    return TodoLog(
+        user_id=user_id,
+        description=item.description,
+        duration=item.duration,
+        tag=item.tag,
+        date=date
+    )
+    
 @login_required
 @ensure_csrf_cookie
 @csrf_protect
 @serialized_endpoint(ListSerializer(TodoLogSerializer).bind_lst)
 def todo_logs_for_day(request, date):
     parsed_date = dateutil.parser.parse(date)
-    todo_logs_for_today = todo_logs.get_logs_for_date(request.user.id, date, sort_by='unique_id')
+    todo_logs_for_day = todo_logs.get_logs_for_date(request.user.id, date, sort_by='unique_id')
+
     
+    if len(todo_logs_for_day) == 0:
+        # create a list of TodoLogs from TodoItems
+        all_todo_items = TodoItem.objects.filter(user_id=request.user.id)
+        
+        new_todo_logs = [todoItemToLog(request.user.id, item, date) for item in all_todo_items]
+        TodoLog.objects.bulk_create(new_todo_logs)
+        todo_logs_for_day = todo_logs.get_logs_for_date(request.user.id, date, sort_by='unique_id')
+        
+        
     #timer = ActiveTimer.objects.filter(user_id=request.user.id).first()
-    return list(todo_logs_for_today)
+    return list(todo_logs_for_day)
     #return JsonResponse([TodoLogSerializer(m).data for m in todo_logs_for_today], safe=False)
 
 
@@ -204,4 +225,14 @@ def stop_timer(request, log_id):
     log.save()
 
     update_stats(request.user.id, log.date)
+    return HttpResponse(status=200)
+
+
+@csrf_protect
+@ensure_csrf_cookie
+@login_required
+def delete_timer(request, log_id):
+    t = ActiveTimer.objects.filter(user_id=request.user.id, linked_todo_log_id=log_id).get()
+    t.delete()
+
     return HttpResponse(status=200)

@@ -21,16 +21,6 @@ import pytz
 from django.views.decorators import cache
 
 
-def todoItemToLog(user_id,item, date):
-    return TodoLog(
-        user_id=user_id,
-        description=item.description,
-        duration=item.duration,
-        tag=item.tag,
-        date=date
-    )
-
-
 class ImportLogsForm(forms.Form):
     log_file = forms.FileField()
     
@@ -184,14 +174,6 @@ def delete_todo_item(request, item_id):
 def inner_date_todo_logs(request, date, fmt_date, templ):
     
     todo_logs_for_today = todo_logs.get_logs_for_date(request.user.id, date, sort_by='unique_id')
-    
-    if len(todo_logs_for_today) == 0:
-        # create a list of TodoLogs from TodoItems
-        all_todo_items = todo_list_or_defaults(request.user.id)
-
-        new_todo_logs = [todoItemToLog(request.user.id, item, date) for item in all_todo_items]
-        TodoLog.objects.bulk_create(new_todo_logs)
-            
     
     return render(request, templ, { #"day_todo_list.html", {
         "title": "Todo List For {}".format(fmt_date),
