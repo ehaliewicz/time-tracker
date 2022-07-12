@@ -111,7 +111,8 @@ def calculate_stats(user_id, date):
         month_log_tags = month_stats['log_tags']
         month_log_dates = month_stats['log_dates']
         month_log_durations = [d/60 for d in month_stats['log_durations']]
-        dates = ["Week of {}".format(d-datetime.timedelta(days=d.weekday())) for d in month_log_dates]
+        sorted_dates = sorted(month_log_dates)
+        dates = ["Week of {}".format(d-datetime.timedelta(days=d.weekday())) for d in sorted_dates]
         fig = go.Figure(data=[go.Histogram(
             x=dates, y=month_log_durations,
             histfunc='sum'
