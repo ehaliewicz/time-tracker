@@ -34,12 +34,7 @@ def get_stats_for_filters(user_id, tags, logs_plot_data, **filter_kwargs):
         **filter_kwargs
     ).aggregate(
         **agg_params        
-    )
-        
-    
-        
-    
-        
+    )        
     processed_tags = []
     if tags:
         tags = (TodoLog.objects.filter(
@@ -253,3 +248,58 @@ def get_or_cache_stats(user_id,date):
 
 
     return calced_stats
+
+
+def calculate_cumulative_stats(user_id):
+    
+    
+    #fig = go.Figure(data=[go.Histogram(
+    #    x=dates, y=month_log_durations,
+    #    histfunc='sum'
+    #)])
+    #fig.update_layout(
+    #    title="Last month",
+    #    xaxis_title="Weeks",
+    #    yaxis_title="Hours",
+    #)
+
+    all_stats = get_stats_for_filters(
+        completion=True,
+        user_id=user_id, tags=False, logs_plot_data=True
+    )
+
+    log_tags = all_stats['log_tags']
+    log_dates = all_stats['log_dates']
+    sorted_dates = sorted(log_dates)
+    dates = ["Month {}".format(d.replace(day=1)) for d in sorted_dates]
+    log_durations = [d/60 for d in all_stats['log_durations']]
+    per_month_fig = go.Figure(data=[
+        go.Histogram(
+            x=dates,
+            y=log_durations,
+            histfunc='sum'
+        )
+    ])
+    per_month_fig.update_layout(
+        title="Time per month",
+        xaxis_title="Months",
+        yaxis_title="Hours",
+    )
+
+    cumulative_fig = go.Figure(data=[
+        go.Histogram(
+            x=dates,
+            y=log_durations,
+            histfunc='sum',
+            cumulative_enabled=True,
+        )
+    ])
+    cumulative_fig.update_layout(
+        title="Cumulative Time",
+        xaxis_title="Months",
+        yaxis_title="Hours",
+    )
+    
+    
+    return (per_month_fig.to_html(), cumulative_fig.to_html())
+

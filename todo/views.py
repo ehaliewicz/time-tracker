@@ -16,7 +16,7 @@ from .forms import TodoItemForm, TodoLogForm, RegisterForm
 import todo.todo_logs as todo_logs
 
 
-from .stats import get_or_cache_stats, update_stats
+from .stats import get_or_cache_stats, update_stats, calculate_cumulative_stats
 import pytz
 from django.views.decorators import cache
 
@@ -238,6 +238,17 @@ def list_todo_logs_for_tag(request, tag):
             })
 
 
+
+@csrf_protect
+def full_stats(request):
+    per_month_chart, cumulative_chart = calculate_cumulative_stats(request.user.id)
+    return render(request, "full_stats.html",
+                  {
+                      "per_month_chart": per_month_chart,
+                      "cumulative_chart": cumulative_chart,
+                  })
+    
+
 @csrf_protect
 @login_required
 def stop_timer(request, log_id):
@@ -257,4 +268,3 @@ def register(request):
         form = RegisterForm()
 
     return render(request, "registration/register.html", {"form": form})
-

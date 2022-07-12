@@ -90,6 +90,16 @@
         <a href="/todo_list"><span class="glyphicon glyphicon-list-alt"></span> Default Todo List</a>
       </li>
       {% endif %}
+      
+      {% if request.path == "/stats" %}
+      <li class="active">
+        <a href="/stats"><span class="glyphicon glyphicon-list-alt"></span> Stats</a>
+      </li>
+      {% else %}
+      <li>
+        <a href="/stats"><span class="glyphicon glyphicon-list-alt"></span> Stats</a>
+      </li>
+      {% endif %}
 
       
       <li>

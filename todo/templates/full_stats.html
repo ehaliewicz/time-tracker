@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+{{ per_month_chart | safe }}
+
+{{ cumulative_chart | safe }}
+
+
+{% endblock %}

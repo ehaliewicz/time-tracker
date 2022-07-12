@@ -29,7 +29,10 @@ urlpatterns = [
     path("day/<str:date>", todo.views.date_todos, name="date todos"),
     path("day/<str:date>/", todo.views.date_todos, name="date todos"),
     path("today/", todo.views.todays_todos, name="todays todos"),
-        
+    
+    path("stats", todo.views.full_stats, name="full stats"),
+    path("stats/", todo.views.full_stats, name="full stats"),
+    
     path("todo_list/", todo.views.todo_list, name="todo list"),
     path("", todo.views.redirect_to_today, name=""),
 
