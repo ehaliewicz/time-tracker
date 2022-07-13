@@ -271,7 +271,7 @@ def calculate_cumulative_stats(user_id):
     log_tags = all_stats['log_tags']
     log_dates = all_stats['log_dates']
     sorted_dates = sorted(log_dates)
-    dates = ["Month {}".format(d.replace(day=1)) for d in sorted_dates]
+    dates = ["Month of {}".format(d.replace(day=1)) for d in sorted_dates]
     log_durations = [d/60 for d in all_stats['log_durations']]
     per_month_fig = go.Figure(data=[
         go.Histogram(
