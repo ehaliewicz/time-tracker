@@ -7,11 +7,15 @@
 
 {{ cumulative_chart | safe }}
 
-{{ all_tags }}
-<select>
+<select class="form-control" id="predicate" onchange="location = this.value">
+  {{range .Entity.PredicateOptions}}
+    <option value="/orgs/{{$OrgID}}/templates/{{$ID}}/{{$FieldIdx}}/add-atom/{{$AtomType}}?predicate={{.}}" {{if (eq . $CurrentPredicate)}}selected{{end}}>{{.}}</option>
+  {{end}}
+</select>
+
+<select onchange="location = this.value">
   {% for tag in all_tags %}
-  <option>{{ tag }}
-  </option>
+  <option value="../stats?tag={{tag[0]}}">{{ tag[0] }}</option>
   {% endfor %}
 </select>
   
