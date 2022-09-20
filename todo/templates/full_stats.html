@@ -8,8 +8,17 @@
 {{ cumulative_chart | safe }}
 
 <select onchange="location = this.value">
+  {% if cur_tag is None %}
+    <option value="../stats" selected>[[No tag]]</option>
+  {% else %}
+    <option value="../stats">[[No tag]]</option>
+  {% endif %}
   {% for tag in all_tags %}
-  <option value="../stats?tag={{tag}}">{{ tag }}</option>
+    {% if cur_tag == tag %}
+      <option value="../stats?tag={{tag}}" selected>{{ tag }}</option>
+    {% else %}
+      <option value="../stats?tag={{tag}}">{{ tag }}</option>
+    {% endif %}   
   {% endfor %}
 </select>
   
