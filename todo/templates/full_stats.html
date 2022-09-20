@@ -8,5 +8,11 @@
 {{ cumulative_chart | safe }}
 
 {{ all_tags }}
-
+<select>
+  {% for tag in all_tags %}
+  <option>{{ tag }}
+  </option>
+  {% endfor %}
+</select>
+  
 {% endblock %}
