@@ -3,6 +3,16 @@
 
 {% block content %}
 
+<div class="row">
+  <div class="col-3"></div>
+  {% if cur_tag is not None %}
+    <div class="col-3"><h4>Showing stats for tag: {{tag}}</div>
+  {% else %}
+    <div class="col-3"><h4>Showing stats for all tags</div>
+  {% end %}
+  <div class="col-3"></div>
+</div>
+
 {{ per_month_chart | safe }}
 
 {{ cumulative_chart | safe }}

@@ -30,7 +30,6 @@ def get_stats_for_filters(user_id, tags, logs_plot_data, **filter_kwargs):
         agg_params['log_tags'] = aggregates.ArrayAgg('tag')
         agg_params['log_dates'] = aggregates.ArrayAgg('date')
 
-    print("applying filters {}".format(filter_kwargs))
     stats = TodoLog.objects.filter(
         user_id=user_id,
         **filter_kwargs
@@ -266,7 +265,6 @@ def calculate_cumulative_stats(user_id, tag=None):
     #)
 
     if tag is not None:
-        print("got tag {}".format(tag))
         all_stats = get_stats_for_filters(
             completion=True,
             user_id=user_id, tags=False, logs_plot_data=True,
