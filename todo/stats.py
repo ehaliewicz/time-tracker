@@ -250,7 +250,7 @@ def get_or_cache_stats(user_id,date):
     return calced_stats
 
 
-def calculate_cumulative_stats(user_id):
+def calculate_cumulative_stats(user_id, tag=None):
     
     
     #fig = go.Figure(data=[go.Histogram(
@@ -263,10 +263,18 @@ def calculate_cumulative_stats(user_id):
     #    yaxis_title="Hours",
     #)
 
-    all_stats = get_stats_for_filters(
-        completion=True,
-        user_id=user_id, tags=False, logs_plot_data=True
-    )
+    if tag is not None:
+        all_stats = get_stats_for_filters(
+            completion=True,
+            user_id=user_id, tags=False, logs_plot_data=True,
+            tag=tag
+        )
+    else:
+        all_stats = get_stats_for_filters(
+            completion=True,
+            user_id=user_id, tags=False, logs_plot_data=True
+        )
+        
 
     log_tags = all_stats['log_tags']
     log_dates = all_stats['log_dates']
@@ -299,7 +307,9 @@ def calculate_cumulative_stats(user_id):
         xaxis_title="Months",
         yaxis_title="Hours",
     )
+
+
+    all_tags = TodoLog.objects.values('item_event_type').distinct()
     
-    
-    return (per_month_fig.to_html(), cumulative_fig.to_html())
+    return (per_month_fig.to_html(), cumulative_fig.to_html(), all_tags)
 
