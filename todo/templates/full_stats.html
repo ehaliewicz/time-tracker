@@ -9,7 +9,7 @@
 
 <select onchange="location = this.value">
   {% for tag in all_tags %}
-  <option value="../stats?tag={{tag}}">{{ tag|upper }}</option>
+  <option value="../stats?tag={{tag}}">{{ tag }}</option>
   {% endfor %}
 </select>
   
