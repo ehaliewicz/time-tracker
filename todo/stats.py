@@ -309,7 +309,7 @@ def calculate_cumulative_stats(user_id, tag=None):
     )
 
 
-    all_tags = TodoLog.objects.values('item_event_type').distinct()
+    all_tags = TodoLog.objects.values('tag').distinct()
     
     return (per_month_fig.to_html(), cumulative_fig.to_html(), all_tags)
 
