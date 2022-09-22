@@ -104,7 +104,9 @@
 
   let root;
   const inner_body = document.getElementById("inner-body");
-  root = render(html`<${DayTodoListPage}/>`, inner_body, root);
+  root = render(html`<${App}/>`, inner_body, root);
+
+  const App = (props) => { return html`<$DayTodoListPage}/>` }
 
   
   // compare two todos with the same id,
