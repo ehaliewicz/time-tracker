@@ -102,11 +102,14 @@
     return fetch(url, props2);
   }  
 
+  const App = (props) => { return html`<$DayTodoListPage}/>` }
+  
   let root;
   const inner_body = document.getElementById("inner-body");
+  
   root = render(html`<${App}/>`, inner_body, root);
 
-  const App = (props) => { return html`<$DayTodoListPage}/>` }
+  
 
   
   // compare two todos with the same id,
