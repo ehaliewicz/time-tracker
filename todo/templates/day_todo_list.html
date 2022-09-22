@@ -102,9 +102,9 @@
     return fetch(url, props2);
   }  
 
-  
+  let root;
   const inner_body = document.getElementById("inner-body");
-  render(html`<${DayTodoListPage}/>`, inner_body);
+  root = render(html`<${DayTodoListPage}/>`, inner_body, root);
 
   
   // compare two todos with the same id,
@@ -171,7 +171,7 @@
   }
   
     
-  function DayTodoListPage() {
+  function DayTodoListPage(props) {
 
   
     const update_todo_list_and_fetch_stats_if_necessary = function(old_todo_list, new_todo_list) {
