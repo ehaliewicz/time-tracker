@@ -61,7 +61,7 @@ def get_stats_for_filters(user_id, tags, logs_plot_data, **filter_kwargs):
         stats['tags'] = [(tag,cnt,get_hr_min(time)) for (tag,(cnt,time)) in processed_tags_d.items()]
 
     
-        
+    
     return stats
 
 
@@ -73,12 +73,15 @@ def calculate_stats(user_id, date):
     todays_stats = get_stats_for_filters(
         user_id=user_id, tags=False, logs_plot_data=False, date=date
     )
+    print(todays_stats)
     completed_todays_stats = get_stats_for_filters(
         user_id=user_id,tags=True, logs_plot_data=False, date=date, completion=True
     )
+    print(completed_todays_stats)
     week_stats = get_stats_for_filters(
         user_id=user_id,tags=True, logs_plot_data=True, date__gte=start_of_week, date__lte=date, completion=True
     )
+    print(week_stats)
     week_stats['avg'] = week_stats['time']/7
     if True:        
         week_log_tags = week_stats['log_tags']
