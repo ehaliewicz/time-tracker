@@ -14,7 +14,11 @@
 
 {{ per_month_chart | safe }}
 
+{{ per_month_count_chart | safe }}
+
 {{ cumulative_chart | safe }}
+
+{{ cumulative_count_chart | safe }}
 
 <select onchange="location = this.value">
   {% if cur_tag is None %}

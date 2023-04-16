@@ -242,11 +242,14 @@ def list_todo_logs_for_tag(request, tag):
 @csrf_protect
 def full_stats(request):
     tag = request.GET.get('tag', None)
-    per_month_chart, cumulative_chart, all_tags = calculate_cumulative_stats(request.user.id, tag=tag)
+    (per_month_chart, per_month_count_chart,
+    cumulative_chart, cumulative_count_chart, all_tags) = calculate_cumulative_stats(request.user.id, tag=tag)
     return render(request, "full_stats.html",
                   {
                       "per_month_chart": per_month_chart,
                       "cumulative_chart": cumulative_chart,
+                      "per_month_count_chart": per_month_count_chart,
+                      "cumulative_count_chart": cumulative_count_chart,
                       "all_tags": all_tags,
                       "cur_tag": tag
                   })

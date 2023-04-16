@@ -73,15 +73,15 @@ def calculate_stats(user_id, date):
     todays_stats = get_stats_for_filters(
         user_id=user_id, tags=False, logs_plot_data=False, date=date
     )
-    print("todays stats: ", todays_stats)
+    #print("todays stats: ", todays_stats)
     completed_todays_stats = get_stats_for_filters(
         user_id=user_id,tags=True, logs_plot_data=False, date=date, completion=True
     )
-    print("completed todays stats: ", completed_todays_stats)
+    #print("completed todays stats: ", completed_todays_stats)
     week_stats = get_stats_for_filters(
         user_id=user_id,tags=True, logs_plot_data=True, date__gte=start_of_week, date__lte=date, completion=True
     )
-    print("week stats: ", week_stats)
+    #print("week stats: ", week_stats)
     week_stats['avg'] = week_stats['time']/7
     if True:        
         week_log_tags = week_stats['log_tags']
@@ -105,7 +105,7 @@ def calculate_stats(user_id, date):
     month_stats = get_stats_for_filters(
         user_id=user_id,tags=True, logs_plot_data=True, date__gte=start_of_month, date__lte=date, completion=True
     )
-    print("month stats", month_stats)
+    #print("month stats", month_stats)
     month_stats['avg'] = month_stats['time']/30
     if True:        
         month_log_tags = month_stats['log_tags']
@@ -131,7 +131,7 @@ def calculate_stats(user_id, date):
     all_stats = get_stats_for_filters(
         user_id=user_id,tags=True, logs_plot_data=False, completion=True
     )
-    print("all stats: ", all_stats)
+    #print("all stats: ", all_stats)
 
     
     pct_tasks = 0
@@ -300,6 +300,22 @@ def calculate_cumulative_stats(user_id, tag=None):
         yaxis_title="Hours",
     )
 
+
+
+    per_month_count_fig = go.Figure(data=[
+        go.Histogram(
+            x=dates,
+            y=log_tags,
+            histfunc='count',
+            cumulative_enabled=True,
+        )
+    ])
+    per_month_count_fig.update_layout(
+        title="Entries per month",
+        xaxis_title="Months",
+        yaxis_title="Hours",
+    )
+    
     cumulative_fig = go.Figure(data=[
         go.Histogram(
             x=dates,
@@ -315,7 +331,26 @@ def calculate_cumulative_stats(user_id, tag=None):
     )
 
 
+    cumulative_count_fig = go.Figure(data=[
+        go.Histogram(
+            x=dates,
+            y=log_tags,
+            histfunc='count',
+            cumulative_enabled=True,
+        )
+    ])
+    cumulative_count_fig.update_layout(
+        title="Cumulative Entries",
+        xaxis_title="Months",
+        yaxis_title="Hours",
+    )
+
+
     all_tags = [t[0] for t in TodoLog.objects.values_list('tag').distinct()]
     
-    return (per_month_fig.to_html(), cumulative_fig.to_html(), all_tags)
+    return (per_month_fig.to_html(),
+            per_month_count_fig.to_html(),
+            cumulative_fig.to_html(),
+            cumulative_count_fig.to_html(),
+            all_tags)
 
