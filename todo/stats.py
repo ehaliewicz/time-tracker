@@ -73,15 +73,15 @@ def calculate_stats(user_id, date):
     todays_stats = get_stats_for_filters(
         user_id=user_id, tags=False, logs_plot_data=False, date=date
     )
-    print(todays_stats)
+    print("todays stats: ", todays_stats)
     completed_todays_stats = get_stats_for_filters(
         user_id=user_id,tags=True, logs_plot_data=False, date=date, completion=True
     )
-    print(completed_todays_stats)
+    print("completed todays stats: ", completed_todays_stats)
     week_stats = get_stats_for_filters(
         user_id=user_id,tags=True, logs_plot_data=True, date__gte=start_of_week, date__lte=date, completion=True
     )
-    print(week_stats)
+    print("week stats: ", week_stats)
     week_stats['avg'] = week_stats['time']/7
     if True:        
         week_log_tags = week_stats['log_tags']
@@ -105,6 +105,7 @@ def calculate_stats(user_id, date):
     month_stats = get_stats_for_filters(
         user_id=user_id,tags=True, logs_plot_data=True, date__gte=start_of_month, date__lte=date, completion=True
     )
+    print("month stats", month_stats)
     month_stats['avg'] = month_stats['time']/30
     if True:        
         month_log_tags = month_stats['log_tags']
@@ -130,6 +131,7 @@ def calculate_stats(user_id, date):
     all_stats = get_stats_for_filters(
         user_id=user_id,tags=True, logs_plot_data=False, completion=True
     )
+    print("all stats: ", all_stats)
 
     
     pct_tasks = 0
