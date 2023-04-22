@@ -28,7 +28,7 @@ SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
 SESSION_COOKIE_HTTPONLY = True
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True #os.getenv('DEBUG', False)
+DEBUG = False #os.getenv('DEBUG', False)
 
 ALLOWED_HOSTS = [
     "http://localhost:5001"
@@ -66,8 +66,6 @@ INSTALLED_APPS = [
     "debug_toolbar",
     "corsheaders",
     "todo",
-    #"debugapp",
-    #"debug_toolbar"
 ]
 
 MIDDLEWARE = [
