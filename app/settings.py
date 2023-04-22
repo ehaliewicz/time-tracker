@@ -39,6 +39,7 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 
+
 CORS_ALLOWED_ORIGINS = [
     "http://time-tracker-622.herokuapp.com",
     "http://localhost:5001"
@@ -50,6 +51,8 @@ CORS_ALLOW_CREDENTIALS = True
 RECAPTCHA_PUBLIC_KEY = os.getenv('RECAPTCHA_PUBLIC_KEY', '')
 RECAPTCHA_PRIVATE_KEY = os.getenv('RECAPTCHA_PRIVATE_KEY', '')
 
+
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -59,6 +62,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "captcha",
     "crispy_forms",
+    "crispy_boostrap4",
     "debug_toolbar",
     "corsheaders",
     "todo",

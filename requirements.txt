@@ -2,6 +2,7 @@ django
 gunicorn
 django-cors-headers
 django-crispy-forms
+crispy-bootstrap4
 django-debug-toolbar
 django-heroku
 django-recaptcha
