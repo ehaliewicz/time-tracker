@@ -62,7 +62,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "captcha",
     "crispy_forms",
-    "crispy_boostrap4",
+    "crispy_bootstrap4",
     "debug_toolbar",
     "corsheaders",
     "todo",
