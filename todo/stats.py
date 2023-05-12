@@ -76,10 +76,14 @@ def calculate_stats(user_id, date):
         user_id=user_id, tags=False, logs_plot_data=False, date=date
     )
     #print("todays stats: ", todays_stats)
+
+    ### QUERY
     completed_todays_stats = get_stats_for_filters(
         user_id=user_id,tags=True, logs_plot_data=False, date=date, completion=True
     )
     #print("completed todays stats: ", completed_todays_stats)
+
+    ### QUERY
     week_stats = get_stats_for_filters(
         user_id=user_id,tags=True, logs_plot_data=True, date__gte=start_of_week, date__lte=date, completion=True
     )
@@ -103,7 +107,7 @@ def calculate_stats(user_id, date):
         week_stats['plot_bytes'] = urllib.parse.quote(img_bytes.decode('utf-8')) #b64encode(img_bytes).decode('utf-8')
         
         
-    
+    ### QUERY
     month_stats = get_stats_for_filters(
         user_id=user_id,tags=True, logs_plot_data=True, date__gte=start_of_month, date__lte=date, completion=True
     )
@@ -129,7 +133,7 @@ def calculate_stats(user_id, date):
         month_stats['plot_bytes'] = urllib.parse.quote(img_bytes.decode('utf-8'))
         
         
-    
+    ### QUERY
     all_stats = get_stats_for_filters(
         user_id=user_id,tags=True, logs_plot_data=False, completion=True
     )
@@ -153,7 +157,7 @@ def calculate_stats(user_id, date):
     else:
         pct_time = 100
         
-
+    ### query
     dates = (TodoLog.objects
              .filter(user_id=user_id, completion=True)
              .values('date')
