@@ -8,7 +8,6 @@ services:
     dockerfilePath: Dockerfile.render
     plan: starter # optional; defaults to starter
     numInstances: 1
-    buildCommand: "./build.sh"
     envVars:
       - key: DEBUG # Imported from Heroku app
         value: False
