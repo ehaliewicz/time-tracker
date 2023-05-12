@@ -72,7 +72,6 @@ class Stats(models.Model):
     date = models.DateField(null=False, primary_key=True)
     stats = models.JSONField(null=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=False)
-    streak = models.IntegerField(null=True)
     class Meta:
         indexes = [
             models.Index(fields=['date', 'user_id' ]),

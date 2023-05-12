@@ -160,12 +160,12 @@ def calculate_stats(user_id, date):
     ### query
     dates = (TodoLog.objects
              .filter(user_id=user_id, completion=True)
-             .values('date')
-             .annotate(count=models.Count('date'))
              .values('date'))
+             #.annotate(count=models.Count('date'))
+             #.values('date'))
 
     completed_dates = set((d.year, d.month, d.day) for d in (r['date'] for r in dates))
-
+    
     def has_date(d):
         return (d.year,d.month,d.day) in completed_dates
     
