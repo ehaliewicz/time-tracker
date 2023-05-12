@@ -38,7 +38,7 @@ urlpatterns = [
 
     path("favicon.ico", RedirectView.as_view(url=staticfiles_storage.url('img/favicon.ico'))),
 
-    #path("__debug__/", include("debug_toolbar.urls")),
+    path("__debug__/", include("debug_toolbar.urls")),
 
     path("admin/", admin.site.urls, name="admin page"),
     path("register/", todo.views.register, name="create new user"),
