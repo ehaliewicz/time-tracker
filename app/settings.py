@@ -28,7 +28,8 @@ SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
 SESSION_COOKIE_HTTPONLY = True
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', False)
+DEBUG_ENV = os.getenv("DEBUG", "False")
+DEBUG = True if DEBUG_ENV == "True" else False #os.getenv('DEBUG', False)
 
 ALLOWED_HOSTS = [
     "http://localhost:5001"
