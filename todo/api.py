@@ -68,7 +68,7 @@ def update_todo_log(request, log_id):
     
     update_stats(request.user.id, form.instance.date)
     after_update_stats = datetime.now()
-    logging.info("""
+    logging.critical("""
     parse input {}ms
     create form {}ms
     form check {}ms
