@@ -4,9 +4,11 @@ from django.db import models
 from django.contrib.postgres import aggregates
 import itertools
 import logging
+from datetime import datetime
 
 import plotly.graph_objects as go
 import urllib.parse
+
 
 def get_hr_min(m):
     im = int(m)
@@ -224,21 +226,44 @@ def init_stats(user_id,date):
     return c_stats
 
 def update_stats(user_id,date):
+    start = datetime.now()
     c_stats = calculate_stats(user_id,date)
-
+    after_calc_stats = datetime.now()
+    
     db_stats = Stats.objects.filter(user_id=user_id,date=date).first()
+    after_get_stats = datetime.now()
+    
     if db_stats is None:
         db_stats = Stats(user_id=user_id,date=date, stats=c_stats)
     else:
         db_stats.stats = c_stats
-
+    
     db_stats.save()
-
+    after_save_stats = datetime.now()
+    
     # invalid later stats
     later_stats = Stats.objects.filter(user_id=user_id,date__gt=date)
+    after_query_later_stats = datetime.now()
     for stats in later_stats:
         stats.delete()
-        
+    after_delete_later_stats = datetime.now()
+
+    logging.critical(
+        """
+        calc stats {}ms
+        get stats {}ms
+        save stats {}ms
+        query later stats {}ms
+        delete later stats {}ms
+        """.format(
+            (after_calc_stats - start).total_seconds()*1000,
+            (after_get_stats - after_calc_stats).total_seconds()*1000,
+            (after_save_stats - after_get_stats).total_seconds()*1000,
+            (after_query_later_stats - after_save_stats).total_seconds()*1000,
+            (after_delete_later_stats - after_query_later_stats).total_seconds()*1000,
+        )
+    )
+    
     return c_stats
 
 

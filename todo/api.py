@@ -13,7 +13,7 @@ import todo.todo_logs as todo_logs
 from .models import TodoItem, TodoLog, ActiveTimer, ActiveTimerSerializer, TodoLogSerializer
 from .stats import get_or_cache_stats, update_stats
 from .forms import TodoLogForm
-from datetime import datetime
+
 
 
 def api_login_required(endpoint):
@@ -52,34 +52,16 @@ def get_todo_log(request, log_id):
 @csrf_protect
 @serialized_endpoint(TodoLogSerializer)
 def update_todo_log(request, log_id):
-    start = datetime.now()
     data = json.loads(request.body)
-    after_parse = datetime.now()
     form = TodoLogForm(data)
-    after_form_create = datetime.now()
     if form.is_valid():
-        after_form_check = datetime.now()
         form.instance.unique_id = log_id
         form.instance.user_id = request.user.id
         form.instance.save()
-        after_form_save = datetime.now()
     else:
         raise Exception("Error(s) updating todo log {}".format(form.errors))
     
     update_stats(request.user.id, form.instance.date)
-    after_update_stats = datetime.now()
-    logging.critical("""
-    parse input {}ms
-    create form {}ms
-    form check {}ms
-    form save {}ms
-    update stats{}ms
-    """.format((after_parse-start).total_seconds()*1000,
-               (after_form_create - after_parse).total_seconds()*1000,
-               (after_form_check - after_form_create).total_seconds()*1000,
-               (after_form_save - after_form_check).total_seconds()*1000,
-               (after_update_stats - after_form_save).total_seconds()*1000,
-               ))
     return form.instance
 
 
