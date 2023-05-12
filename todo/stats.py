@@ -163,8 +163,9 @@ def calculate_stats(user_id, date):
              .filter(user_id=user_id, completion=True)
              .distinct('date')
              .values('date')
-             .annotate(count=models.Count('date'))
-             .values('date'))
+             #.annotate(count=models.Count('date'))
+             #.values('date')
+             )
 
     completed_dates = set((d.year, d.month, d.day) for d in (r['date'] for r in dates))
     
