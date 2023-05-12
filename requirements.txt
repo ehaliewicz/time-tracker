@@ -11,4 +11,3 @@ kaleido
 plotly
 python-dateutil
 pytz
-django-silk
