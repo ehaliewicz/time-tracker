@@ -4,7 +4,7 @@ from django.db import models
 from django.contrib.postgres import aggregates
 import itertools
 import logging
-from datetime import datetime
+
 
 import plotly.graph_objects as go
 import urllib.parse
@@ -226,12 +226,12 @@ def init_stats(user_id,date):
     return c_stats
 
 def update_stats(user_id,date):
-    start = datetime.now()
+    start = datetime.datetime.now()
     c_stats = calculate_stats(user_id,date)
-    after_calc_stats = datetime.now()
+    after_calc_stats = datetime.datetime.now()
     
     db_stats = Stats.objects.filter(user_id=user_id,date=date).first()
-    after_get_stats = datetime.now()
+    after_get_stats = datetime.datetime.now()
     
     if db_stats is None:
         db_stats = Stats(user_id=user_id,date=date, stats=c_stats)
@@ -239,14 +239,14 @@ def update_stats(user_id,date):
         db_stats.stats = c_stats
     
     db_stats.save()
-    after_save_stats = datetime.now()
+    after_save_stats = datetime.datetime.now()
     
     # invalid later stats
     later_stats = Stats.objects.filter(user_id=user_id,date__gt=date)
-    after_query_later_stats = datetime.now()
+    after_query_later_stats = datetime.datetime.now()
     for stats in later_stats:
         stats.delete()
-    after_delete_later_stats = datetime.now()
+    after_delete_later_stats = datetime.datetime.now()
 
     logging.critical(
         """
