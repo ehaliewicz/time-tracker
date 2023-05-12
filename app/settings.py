@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     "debug_toolbar",
     "corsheaders",
     "todo",
+    "silk",
 ]
 
 MIDDLEWARE = [
@@ -79,7 +80,8 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "debug_toolbar.middleware.DebugToolbarMiddleware",
-    "todo.forms.add_login_timezone_to_session_middleware"
+    "todo.forms.add_login_timezone_to_session_middleware",
+    "silk.middleware.SilkyMiddleware",
 ]
 
 ROOT_URLCONF = "app.urls"
