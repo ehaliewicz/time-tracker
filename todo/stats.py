@@ -260,7 +260,7 @@ def update_stats(user_id,date):
             (after_get_stats - after_calc_stats).total_seconds()*1000,
             (after_save_stats - after_get_stats).total_seconds()*1000,
             (after_query_later_stats - after_save_stats).total_seconds()*1000,
-            (after_delete_later_stats - after_query_later_stats).total_seconds()*1000,
+            (after_delete_later_stats - after_query_later_stats).total_seconds()*1000
         )
     )
     
