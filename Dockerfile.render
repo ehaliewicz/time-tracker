@@ -24,6 +24,8 @@ FROM ghcr.io/renderinc/heroku-app-builder:${HEROKU_STACK} AS builder
 # `v2` image, this allows us to expose build-time env vars to your app.
 RUN /render/build-scripts/apply-buildpacks.py ${HEROKU_STACK}
 
+RUN ./build.sh
+
 # We strongly recommend that you package a Procfile with your application, but
 # if you don't, we'll try to guess one for you. If this is incorrect, please
 # add a Procfile that tells us what you need us to run.
