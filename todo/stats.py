@@ -339,7 +339,7 @@ def calculate_cumulative_stats(user_id, tag=None):
             x=dates,
             y=log_tags,
             histfunc='count',
-            cumulative_enabled=True,
+            cumulative_enabled=False,
         )
     ])
     per_month_count_fig.update_layout(
