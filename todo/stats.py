@@ -345,7 +345,7 @@ def calculate_cumulative_stats(user_id, tag=None):
     per_month_count_fig.update_layout(
         title="Entries per month",
         xaxis_title="Months",
-        yaxis_title="Hours",
+        yaxis_title="Entries",
     )
     
     cumulative_fig = go.Figure(data=[
@@ -374,7 +374,7 @@ def calculate_cumulative_stats(user_id, tag=None):
     cumulative_count_fig.update_layout(
         title="Cumulative Entries",
         xaxis_title="Months",
-        yaxis_title="Hours",
+        yaxis_title="Entries",
     )
 
 
