@@ -5,8 +5,7 @@ import logging
 
 from .models import TodoItem, TodoLog
 
-from captcha.fields import ReCaptchaField
-from captcha.widgets import ReCaptchaV3
+from captcha.fields import CaptchaField
 
 class TodoItemForm(forms.ModelForm):
     class Meta:
@@ -22,7 +21,7 @@ class TodoLogForm(forms.ModelForm):
 
 class RegisterForm(UserCreationForm):
     email = forms.EmailField()
-    captcha = ReCaptchaField(widget=ReCaptchaV3)
+    captcha = CaptchaField()
     class Meta:
         model = User
         fields = ["username", "email", "password1", "password2"]
