@@ -5,7 +5,7 @@ django-crispy-forms
 crispy-bootstrap4
 django-debug-toolbar
 django-heroku
-django-recaptcha
+django-simple-captcha
 djangorestframework
 kaleido
 plotly
